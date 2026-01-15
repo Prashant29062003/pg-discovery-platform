@@ -1,31 +1,36 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
-  provider = "prisma-client"
-  output   = "../src/generated/prisma"
+  provider = "prisma-client-js"
 }
 
 datasource db {
   provider = "postgresql"
+  url      = env("DATABASE_URL")
 }
 
+enum RoomType {
+  SINGLE
+  DOUBLE
+  TRIPLE
+  OTHER
+}
 
-/// ==========================
-/// CORE PG MODELS
-/// ==========================
+enum EnquiryStatus {
+  NEW
+  CONTACTED
+  CLOSED
+}
+
 model PG {
   id          String   @id @default(cuid())
   slug        String   @unique
   name        String
-  description String
+  description String   @db.Text
   images      String[]
   amenities   String[]
   isFeatured  Boolean  @default(false)
   address     String
+  city        String   // Added for filtering per PRD 4.3
+  locality    String   // Added for SEO per PRD 4.3
   
   rooms       Room[]
   enquiries   Enquiry[]
@@ -35,6 +40,7 @@ model PG {
 
   @@index([slug])
   @@index([isFeatured])
+  @@index([city])
 }
 
 model Room {
@@ -42,7 +48,7 @@ model Room {
   pgId       String
   pg         PG       @relation(fields: [pgId], references: [id], onDelete: Cascade)
   roomNumber String
-  type       String   // e.g., 'Single', 'Double'
+  type       RoomType @default(SINGLE)
   basePrice  Float
   
   beds       Bed[]
@@ -57,20 +63,17 @@ model Bed {
   isOccupied Boolean  @default(false)
 }
 
-
-/// ==========================
-/// USER INTERACTION
-/// ==========================
 model Enquiry {
-  id        String   @id @default(cuid())
+  id        String        @id @default(cuid())
   pgId      String
-  pg        PG       @relation(fields: [pgId], references: [id])
+  pg        PG            @relation(fields: [pgId], references: [id])
   name      String
   phone     String
-  message   String?
-  status    String   @default("NEW")
+  message   String?       @db.Text
+  status    EnquiryStatus @default(NEW)
   
-  createdAt DateTime @default(now())
+  createdAt DateTime      @default(now())
 
-  @@index([phone, pgId])
+  // Helps with the "One enquiry per phone per PG" rule logic
+  @@index([phone, pgId, createdAt])
 }
