@@ -4,7 +4,6 @@ generator client {
 
 datasource db {
   provider = "postgresql"
-  url      = env("DATABASE_URL")
 }
 
 enum RoomType {
@@ -29,14 +28,14 @@ model PG {
   amenities   String[]
   isFeatured  Boolean  @default(false)
   address     String
-  city        String   // Added for filtering per PRD 4.3
-  locality    String   // Added for SEO per PRD 4.3
-  
-  rooms       Room[]
-  enquiries   Enquiry[]
-  
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  city        String // Added for filtering per PRD 4.3
+  locality    String // Added for SEO per PRD 4.3
+
+  rooms     Room[]
+  enquiries Enquiry[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@index([slug])
   @@index([isFeatured])
@@ -50,29 +49,29 @@ model Room {
   roomNumber String
   type       RoomType @default(SINGLE)
   basePrice  Float
-  
-  beds       Bed[]
+
+  beds Bed[]
 
   @@unique([pgId, roomNumber])
 }
 
 model Bed {
-  id         String   @id @default(cuid())
+  id         String  @id @default(cuid())
   roomId     String
-  room       Room     @relation(fields: [roomId], references: [id], onDelete: Cascade)
-  isOccupied Boolean  @default(false)
+  room       Room    @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  isOccupied Boolean @default(false)
 }
 
 model Enquiry {
-  id        String        @id @default(cuid())
-  pgId      String
-  pg        PG            @relation(fields: [pgId], references: [id])
-  name      String
-  phone     String
-  message   String?       @db.Text
-  status    EnquiryStatus @default(NEW)
-  
-  createdAt DateTime      @default(now())
+  id      String        @id @default(cuid())
+  pgId    String
+  pg      PG            @relation(fields: [pgId], references: [id])
+  name    String
+  phone   String
+  message String?       @db.Text
+  status  EnquiryStatus @default(NEW)
+
+  createdAt DateTime @default(now())
 
   // Helps with the "One enquiry per phone per PG" rule logic
   @@index([phone, pgId, createdAt])
