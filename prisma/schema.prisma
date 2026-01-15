@@ -1,0 +1,76 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+
+/// ==========================
+/// CORE PG MODELS
+/// ==========================
+model PG {
+  id          String   @id @default(cuid())
+  slug        String   @unique
+  name        String
+  description String
+  images      String[]
+  amenities   String[]
+  isFeatured  Boolean  @default(false)
+  address     String
+  
+  rooms       Room[]
+  enquiries   Enquiry[]
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([slug])
+  @@index([isFeatured])
+}
+
+model Room {
+  id         String   @id @default(cuid())
+  pgId       String
+  pg         PG       @relation(fields: [pgId], references: [id], onDelete: Cascade)
+  roomNumber String
+  type       String   // e.g., 'Single', 'Double'
+  basePrice  Float
+  
+  beds       Bed[]
+
+  @@unique([pgId, roomNumber])
+}
+
+model Bed {
+  id         String   @id @default(cuid())
+  roomId     String
+  room       Room     @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  isOccupied Boolean  @default(false)
+}
+
+
+/// ==========================
+/// USER INTERACTION
+/// ==========================
+model Enquiry {
+  id        String   @id @default(cuid())
+  pgId      String
+  pg        PG       @relation(fields: [pgId], references: [id])
+  name      String
+  phone     String
+  message   String?
+  status    String   @default("NEW")
+  
+  createdAt DateTime @default(now())
+
+  @@index([phone, pgId])
+}
