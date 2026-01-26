@@ -1,36 +1,106 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# PG Discovery Platform
 
-## Getting Started
+A modern, full-stack web application for discovering and managing paying guest (PG) accommodations. Features a public-facing discovery portal and a comprehensive admin CMS for property owners.
 
-First, run the development server:
+**Version:** 0.1.0 (Phase-0 MVP)
+
+## Quick Start
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+git clone <repository-url>
+cd pg-discovery-platform
+bun install
+
+cp .env.example .env.local
+# Add DATABASE_URL, CLERK keys
+
+bun run db:push
+bun run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Visit [http://localhost:3000](http://localhost:3000)
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Tech Stack
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+- **Frontend**: Next.js 14+ • TypeScript • Tailwind CSS • shadcn/ui
+- **Backend**: Node.js • PostgreSQL • Drizzle ORM  
+- **Auth**: Clerk | **Images**: Cloudinary
 
-## Learn More
+## Key Features
 
-To learn more about Next.js, take a look at the following resources:
+- ✅ Public property discovery portal
+- ✅ Owner admin dashboard (CRUD operations)
+- ✅ Secure user authentication (Clerk)
+- ✅ Property, room & bed management
+- ✅ Guest tracking & safety audits
+- ✅ Image management with fallbacks
+- ✅ Responsive design with dark mode
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Documentation
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+- **[Architecture](docs/ARCHITECTURE.md)** – Project structure & design patterns
+- **[Features](docs/FEATURES.md)** – Complete feature specifications  
+- **[Development](docs/DEVELOPMENT.md)** – Development workflow & guidelines
+- **[Database](docs/DATABASE.md)** – Schema & migration guide
+- **[Quick Start](docs/QUICK_START.md)** – Common tasks & commands
+- **[API Reference](docs/API.md)** – API endpoints & examples
+- **[PRD](docs/PRD.md)** – Product requirements document
+- **[Sign-in Help](docs/SIGN_IN_HELP.md)** – Authentication troubleshooting
 
-## Deploy on Vercel
+## Available Scripts
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+```bash
+bun run dev              # Start development server
+bun run build            # Create production build
+bun run db:push          # Push schema to database
+bun run db:studio        # Open database editor
+bun run lint             # Run ESLint
+```
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Project Structure
+
+```
+src/
+├── app/        # Pages and routes
+├── components/ # UI components
+├── modules/    # Feature modules (guests, pg, safety, etc.)
+├── lib/        # Utilities and validation
+├── db/         # Database schema
+└── store/      # State management
+```
+
+## Environment Variables
+
+Create `.env.local`:
+
+```env
+DATABASE_URL=postgresql://...
+NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_test_...
+CLERK_SECRET_KEY=sk_test_...
+NEXT_PUBLIC_API_URL=http://localhost:3000
+```
+
+## Code Patterns
+
+**Schema-Validation-Action Pattern:**
+```
+src/modules/feature/
+├── feature.schema.ts      # Zod schemas + enums
+├── feature.actions.ts     # Server actions
+```
+
+**Validation Example:**
+```typescript
+import { createGuestSchema } from './guest.schema';
+
+export async function createGuest(data: CreateGuestInput) {
+  const validated = createGuestSchema.parse(data);
+  // Database operation
+  revalidatePath('/admin/guests');
+}
+```
+
+## License
+
+MIT
+

@@ -2,6 +2,7 @@
 
 import { useUser, useClerk } from '@clerk/nextjs';
 import { useRouter } from 'next/navigation';
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
@@ -11,8 +12,21 @@ export default function UserMenu() {
   const { user, isLoaded } = useUser();
   const { signOut } = useClerk();
   const router = useRouter();
+  const [mounted, setMounted] = useState(false);
 
-  if (!isLoaded || !user) return null;
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  // Don't render on server or before hydration completes
+  if (!mounted || !isLoaded || !user) {
+    // Render skeleton placeholder to match button dimensions
+    return (
+      <Button variant="ghost" className="rounded-full h-10 w-10 p-0 cursor-pointer" disabled>
+        <div className="h-8 w-8 rounded-full bg-zinc-200 dark:bg-zinc-800 animate-pulse" />
+      </Button>
+    );
+  }
 
   const userRole = (user.publicMetadata as any)?.role;
   const dashboardUrl = userRole === 'owner' ? '/admin' : '/visitor/dashboard';

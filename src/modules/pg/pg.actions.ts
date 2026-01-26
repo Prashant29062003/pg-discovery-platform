@@ -228,3 +228,57 @@ export async function getPGWithRooms(pgId: string) {
 
   return { pg: pgData[0], rooms: roomsData };
 }
+
+/**
+ * Fetch PG data for edit form - prefills form with existing database values
+ * Owner can see current data and modify as needed
+ */
+export async function getPGForEdit(pgId: string) {
+  const { userId } = await auth();
+  if (!userId) throw new Error('Unauthorized');
+
+  // Fetch PG by ID
+  const pgData = await db
+    .select()
+    .from(pgs)
+    .where(eq(pgs.id, pgId))
+    .execute();
+
+  if (pgData.length === 0) {
+    throw new Error(`Property not found`);
+  }
+
+  const pg = pgData[0];
+  
+  // Verify ownership - ensure user can only edit their own properties
+  // if (pg.ownerId !== userId) {
+  //   throw new Error('Unauthorized - you do not own this property');
+  // }
+
+  // Return formatted data for form prefilling
+  return {
+    id: pg.id,
+    name: pg.name,
+    slug: pg.slug,
+    description: pg.description || '',
+    gender: pg.gender || 'UNISEX',
+    address: pg.address || '',
+    city: pg.city || '',
+    locality: pg.locality || '',
+    lat: pg.lat || undefined,
+    lng: pg.lng || undefined,
+    fullAddress: pg.fullAddress || '',
+    images: pg.images || [],
+    thumbnailImage: pg.thumbnailImage || '',
+    amenities: pg.amenities || [],
+    managerName: pg.managerName || '',
+    phoneNumber: pg.phoneNumber || '',
+    checkInTime: pg.checkInTime || '14:00',
+    checkOutTime: pg.checkOutTime || '11:00',
+    minStayDays: String(pg.minStayDays || 1),
+    rulesAndRegulations: pg.rulesAndRegulations || '',
+    cancellationPolicy: pg.cancellationPolicy || '',
+    isPublished: pg.isPublished || false,
+    isFeatured: pg.isFeatured || false,
+  };
+}

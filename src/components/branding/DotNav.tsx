@@ -3,18 +3,32 @@ import { useEffect, useState, useRef } from "react";
 import { cn } from "@/utils";
 import { motion, AnimatePresence } from "framer-motion";
 
-const sections = [
-  { id: "hero", label: "Overview" },
+// Main branding page sections - IDs match actual page sections
+const mainSections = [
+  { id: "hero", label: "Hero" },
   { id: "promise", label: "Our Promise" },
-  { id: "cities", label: "Locations" },
-  { id: "experience", label: "Lifestyle" },
-  { id: "location", label: "The Venue" },
-  { id: "branches", label: "Branches" },
+  { id: "locations", label: "Cities" },
+  { id: "experience", label: "Experience" },
+  { id: "venue", label: "Location" },
+  { id: "branches", label: "Neighbourhoods" },
   { id: "accordion", label: "FAQ" },
-  { id: "testimonials", label: "Stories" },
+  { id: "testimonials", label: "Testimonials" },
 ];
 
-export default function ScrollProgressNav() {
+// Visitor dashboard sections - professional naming with semantic IDs
+const visitorSections = [
+  { id: "dashboard-header", label: "Dashboard" },
+  { id: "enquiries", label: "My Enquiries" },
+  { id: "saved", label: "Saved Properties" },
+  { id: "profile", label: "Profile Settings" },
+];
+
+interface DotNavProps {
+  variant?: "main" | "visitor";
+}
+
+export default function ScrollProgressNav({ variant = "main" }: DotNavProps) {
+  const sections = variant === "visitor" ? visitorSections : mainSections;
   const [active, setActive] = useState("hero");
   const [showLabels, setShowLabels] = useState(true);
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);

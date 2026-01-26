@@ -1,23 +1,24 @@
 /**
  * Common amenities list for PG properties
+ * These match the database seed values for consistency
  */
 export const COMMON_AMENITIES = [
-  'WiFi',
-  'Parking',
+  'High-Speed WiFi',
+  'Parking Available',
   'Gym',
-  'Laundry',
+  'Laundry Service',
   'Hot Water',
   'Kitchen Access',
-  'AC',
+  'AC Rooms',
   'TV',
   'Cooler',
   'Meals Included',
   'Study Desk',
   'Attached Bathroom',
-  'Common Lounge',
-  'Security Camera',
-  'Generator',
-  'Solar Panel',
+  'Common Room',
+  '24/7 Security with CCTV',
+  'Power Backup (24/7)',
+  'Fully Functional Lift',
 ] as const;
 
 export type Amenity = (typeof COMMON_AMENITIES)[number];
