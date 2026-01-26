@@ -1,0 +1,505 @@
+{
+  "info": {
+    "_postman_id": "pg-discovery-platform",
+    "name": "PG Discovery Platform - Complete API",
+    "description": "Full API testing collection with authentication and all endpoints",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "🏠 PG Management",
+      "item": [
+        {
+          "name": "✅ Create PG (POST)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "  let pgId = pm.response.json().data.id;",
+                  "  pm.environment.set('pg_id', pgId);",
+                  "  console.log('✅ PG created with ID: ' + pgId);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Cookie",
+                "value": "__session={{clerk_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"id\": \"pg_test_{{$timestamp}}\",\n  \"slug\": \"demo-pg-{{$timestamp}}\",\n  \"name\": \"Test PG {{$timestamp}}\",\n  \"description\": \"This is a test PG for Postman testing\",\n  \"address\": \"123 Main St\",\n  \"city\": \"Delhi\",\n  \"locality\": \"Karol Bagh\",\n  \"gender\": \"UNISEX\",\n  \"images\": [\"https://example.com/image.jpg\"],\n  \"amenities\": [\"WiFi\", \"Laundry\"],\n  \"managerName\": \"John Doe\",\n  \"phoneNumber\": \"9876543210\"\n}"
+            },
+            "url": {
+              "raw": "{{api_url}}/pgs",
+              "host": ["{{api_url}}"],
+              "path": ["pgs"]
+            }
+          }
+        },
+        {
+          "name": "📋 Get All PGs (GET - Public)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{api_url}}/pgs",
+              "host": ["{{api_url}}"],
+              "path": ["pgs"]
+            }
+          }
+        },
+        {
+          "name": "🔍 Get Single PG (GET - Public)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{api_url}}/pgs/{{pg_id}}",
+              "host": ["{{api_url}}"],
+              "path": ["pgs", "{{pg_id}}"]
+            }
+          }
+        },
+        {
+          "name": "✏️ Update PG (PUT - Auth Required)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Cookie",
+                "value": "__session={{clerk_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Updated Test PG\",\n  \"description\": \"Updated description\"\n}"
+            },
+            "url": {
+              "raw": "{{api_url}}/pgs/{{pg_id}}",
+              "host": ["{{api_url}}"],
+              "path": ["pgs", "{{pg_id}}"]
+            }
+          }
+        },
+        {
+          "name": "🗑️ Delete PG (DELETE - Auth Required)",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Cookie",
+                "value": "__session={{clerk_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{api_url}}/pgs/{{pg_id}}",
+              "host": ["{{api_url}}"],
+              "path": ["pgs", "{{pg_id}}"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "🚪 Room Management",
+      "item": [
+        {
+          "name": "✅ Create Room (POST)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "  let roomId = pm.response.json().data.id;",
+                  "  pm.environment.set('room_id', roomId);",
+                  "  console.log('✅ Room created with ID: ' + roomId);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Cookie",
+                "value": "__session={{clerk_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"roomNumber\": \"101\",\n  \"type\": \"SINGLE\",\n  \"basePrice\": 5000,\n  \"deposit\": 10000,\n  \"capacity\": 1,\n  \"amenities\": [\"AC\", \"WiFi\"],\n  \"roomImages\": [\"https://example.com/room.jpg\"]\n}"
+            },
+            "url": {
+              "raw": "{{api_url}}/pgs/{{pg_id}}/rooms",
+              "host": ["{{api_url}}"],
+              "path": ["pgs", "{{pg_id}}", "rooms"]
+            }
+          }
+        },
+        {
+          "name": "📋 Get All Rooms (GET - Public)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{api_url}}/pgs/{{pg_id}}/rooms",
+              "host": ["{{api_url}}"],
+              "path": ["pgs", "{{pg_id}}", "rooms"]
+            }
+          }
+        },
+        {
+          "name": "🔍 Get Single Room (GET - Public)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{api_url}}/pgs/{{pg_id}}/rooms/{{room_id}}",
+              "host": ["{{api_url}}"],
+              "path": ["pgs", "{{pg_id}}", "rooms", "{{room_id}}"]
+            }
+          }
+        },
+        {
+          "name": "✏️ Update Room (PUT - Auth Required)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Cookie",
+                "value": "__session={{clerk_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"basePrice\": 5500,\n  \"capacity\": 2\n}"
+            },
+            "url": {
+              "raw": "{{api_url}}/pgs/{{pg_id}}/rooms/{{room_id}}",
+              "host": ["{{api_url}}"],
+              "path": ["pgs", "{{pg_id}}", "rooms", "{{room_id}}"]
+            }
+          }
+        },
+        {
+          "name": "🗑️ Delete Room (DELETE - Auth Required)",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Cookie",
+                "value": "__session={{clerk_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{api_url}}/pgs/{{pg_id}}/rooms/{{room_id}}",
+              "host": ["{{api_url}}"],
+              "path": ["pgs", "{{pg_id}}", "rooms", "{{room_id}}"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "🛏️ Bed Management",
+      "item": [
+        {
+          "name": "✅ Create Bed (POST)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "  let bedId = pm.response.json().bedId;",
+                  "  pm.environment.set('bed_id', bedId);",
+                  "  console.log('✅ Bed created with ID: ' + bedId);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Cookie",
+                "value": "__session={{clerk_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"roomId\": \"{{room_id}}\",\n  \"bedNumber\": \"A1\",\n  \"isOccupied\": false\n}"
+            },
+            "url": {
+              "raw": "{{api_url}}/pgs/{{pg_id}}/rooms/{{room_id}}/beds",
+              "host": ["{{api_url}}"],
+              "path": ["pgs", "{{pg_id}}", "rooms", "{{room_id}}", "beds"]
+            }
+          }
+        },
+        {
+          "name": "📋 Get All Beds (GET - Public)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{api_url}}/pgs/{{pg_id}}/rooms/{{room_id}}/beds",
+              "host": ["{{api_url}}"],
+              "path": ["pgs", "{{pg_id}}", "rooms", "{{room_id}}", "beds"]
+            }
+          }
+        },
+        {
+          "name": "🔍 Get Single Bed (GET - Public)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{api_url}}/pgs/{{pg_id}}/rooms/{{room_id}}/beds/{{bed_id}}",
+              "host": ["{{api_url}}"],
+              "path": ["pgs", "{{pg_id}}", "rooms", "{{room_id}}", "beds", "{{bed_id}}"]
+            }
+          }
+        },
+        {
+          "name": "✏️ Update Bed (PUT - Auth Required)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Cookie",
+                "value": "__session={{clerk_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"isOccupied\": true\n}"
+            },
+            "url": {
+              "raw": "{{api_url}}/pgs/{{pg_id}}/rooms/{{room_id}}/beds/{{bed_id}}",
+              "host": ["{{api_url}}"],
+              "path": ["pgs", "{{pg_id}}", "rooms", "{{room_id}}", "beds", "{{bed_id}}"]
+            }
+          }
+        },
+        {
+          "name": "🗑️ Delete Bed (DELETE - Auth Required)",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Cookie",
+                "value": "__session={{clerk_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{api_url}}/pgs/{{pg_id}}/rooms/{{room_id}}/beds/{{bed_id}}",
+              "host": ["{{api_url}}"],
+              "path": ["pgs", "{{pg_id}}", "rooms", "{{room_id}}", "beds", "{{bed_id}}"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "💬 Enquiries",
+      "item": [
+        {
+          "name": "✅ Create Enquiry (POST - Public)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "  let enquiryId = pm.response.json().data.id;",
+                  "  pm.environment.set('enquiry_id', enquiryId);",
+                  "  console.log('✅ Enquiry created with ID: ' + enquiryId);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"pgId\": \"{{pg_id}}\",\n  \"name\": \"Test User\",\n  \"phone\": \"9876543210\",\n  \"message\": \"Interested in this property\",\n  \"occupation\": \"Engineer\",\n  \"roomType\": \"SINGLE\",\n  \"moveInDate\": \"2026-02-01T00:00:00Z\"\n}"
+            },
+            "url": {
+              "raw": "{{api_url}}/enquiries",
+              "host": ["{{api_url}}"],
+              "path": ["enquiries"]
+            }
+          }
+        },
+        {
+          "name": "📋 Get All Enquiries (GET - Public)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{api_url}}/enquiries",
+              "host": ["{{api_url}}"],
+              "path": ["enquiries"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "🔧 Utilities",
+      "item": [
+        {
+          "name": "🏥 Health Check (GET - Public)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{api_url}}/health",
+              "host": ["{{api_url}}"],
+              "path": ["health"]
+            }
+          }
+        },
+        {
+          "name": "✅ Bootstrap Admin (POST - Auth Required)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "  let pgId = pm.response.json().pgId;",
+                  "  pm.environment.set('pg_id', pgId);",
+                  "  console.log('✅ Demo PG created with ID: ' + pgId);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Cookie",
+                "value": "__session={{clerk_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{api_url}}/admin/bootstrap",
+              "host": ["{{api_url}}"],
+              "path": ["admin", "bootstrap"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "🧪 Test Scenarios",
+      "item": [
+        {
+          "name": "✅ Complete CRUD Flow",
+          "item": [
+            {
+              "name": "1. Create PG",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Cookie",
+                    "value": "__session={{clerk_token}}"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"slug\": \"test-crud-{{$timestamp}}\",\n  \"name\": \"CRUD Test PG\",\n  \"description\": \"Testing complete CRUD flow\",\n  \"address\": \"Test Address\",\n  \"city\": \"Delhi\",\n  \"locality\": \"Test Locality\",\n  \"gender\": \"UNISEX\"\n}"
+                },
+                "url": {
+                  "raw": "{{api_url}}/pgs",
+                  "host": ["{{api_url}}"],
+                  "path": ["pgs"]
+                }
+              }
+            }
+          ]
+        },
+        {
+          "name": "🔐 Ownership Verification Tests",
+          "item": [
+            {
+              "name": "Test: Non-Owner Cannot Update PG",
+              "request": {
+                "method": "PUT",
+                "header": [
+                  {
+                    "key": "Cookie",
+                    "value": "__session=DIFFERENT_USER_TOKEN"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"name\": \"Hacked Name\"\n}"
+                },
+                "url": {
+                  "raw": "{{api_url}}/pgs/{{pg_id}}",
+                  "host": ["{{api_url}}"],
+                  "path": ["pgs", "{{pg_id}}"]
+                }
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
