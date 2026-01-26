@@ -1,0 +1,31 @@
+"use client";
+
+import { usePathname } from "next/navigation";
+import Sidebar from "@/components/admin/layout/Sidebar";
+import Navbar from "@/components/branding/Navbar";
+import Footer from "@/components/branding/Footer";
+import { FloatingEnquiry } from "../visitor/forms/FloatingEnquiry";
+
+export default function MainLayout({ children }: { children: React.ReactNode }) {
+    const pathname = usePathname();
+    const isLanding = pathname === "/";
+    
+    const showSidebar = pathname.startsWith("/dashboard") || pathname.startsWith("/wallet") || pathname.startsWith("/messages");
+    const showFloatingEnquiry = pathname.startsWith("/pgs") || pathname.startsWith("/dashboard") || pathname.startsWith("/wallet") || pathname.startsWith("/messages");
+
+    return (
+        <div className="flex min-h-screen bg-zinc-50 dark:bg-black transition-colors duration-300">
+            {showSidebar && <Sidebar />}
+
+            {/* Adjusting the main container padding based on sidebar visibility */}
+            <div className={`flex-1 flex flex-col min-w-0 ${showSidebar ? "lg:pl-64 pl-20" : ""}`}>
+                <Navbar />
+                <main className={isLanding ? "flex-1 w-full" : "flex-1 w-full max-w-7xl mx-auto px-4 py-8"}>
+                    {children}
+                </main>
+                <Footer />
+                {showFloatingEnquiry && <FloatingEnquiry/>}
+            </div>
+        </div>
+    );
+}
