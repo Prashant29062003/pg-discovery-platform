@@ -40,7 +40,7 @@ export default async function VisitorDashboard() {
       <div className="min-h-screen bg-linear-to-b from-zinc-50 to-white dark:from-zinc-950 dark:to-zinc-900">
       {/* Header */}
       <div id="dashboard-header" className="border-b border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950">
-        <div className="max-w-4xl mx-auto px-6 py-8">
+        <div className="max-w-4xl mx-auto px-6 py-6">
           <Link href="/pgs" className="inline-flex items-center gap-2 text-sm text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white mb-4">
             <ArrowLeft className="h-4 w-4" />
             Back to PGs
