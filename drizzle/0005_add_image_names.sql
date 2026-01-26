@@ -1,0 +1,1 @@
+ALTER TABLE "pgs" ADD COLUMN "image_names" text[] DEFAULT '{}' NOT NULL;
