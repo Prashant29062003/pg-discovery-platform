@@ -4,6 +4,7 @@ import { sql } from "drizzle-orm"
 export const enquiryStatus = pgEnum("enquiry_status", ['NEW', 'CONTACTED', 'CLOSED'])
 export const gender = pgEnum("gender", ['MALE', 'FEMALE', 'UNISEX'])
 export const roomType = pgEnum("room_type", ['SINGLE', 'DOUBLE', 'TRIPLE', 'OTHER'])
+export const auditStatus = pgEnum("audit_status", ['PASSED', 'FAILED', 'PENDING'])
 
 
 export const beds = pgTable("beds", {
@@ -78,4 +79,49 @@ export const pgs = pgTable("pgs", {
 	index("city_idx").using("btree", table.city.asc().nullsLast().op("text_ops")),
 	index("gender_idx").using("btree", table.gender.asc().nullsLast().op("enum_ops")),
 	unique("pgs_slug_unique").on(table.slug),
+]);
+
+// Guest tracking - for check-in/check-out management
+export const guests = pgTable("guests", {
+	id: text().primaryKey().notNull(),
+	bedId: text("bed_id").notNull(),
+	name: text().notNull(),
+	phone: varchar({ length: 15 }),
+	email: text(),
+	checkInDate: timestamp("check_in_date", { mode: 'string' }).notNull(),
+	checkOutDate: timestamp("check_out_date", { mode: 'string' }),
+	isActive: boolean("is_active").default(true).notNull(),
+	createdAt: timestamp("created_at", { mode: 'string' }).defaultNow().notNull(),
+	updatedAt: timestamp("updated_at", { mode: 'string' }).defaultNow().notNull(),
+}, (table) => [
+	foreignKey({
+			columns: [table.bedId],
+			foreignColumns: [beds.id],
+			name: "guests_bed_id_beds_id_fk"
+		}).onDelete("cascade"),
+	index("guest_bed_idx").using("btree", table.bedId.asc().nullsLast().op("text_ops")),
+	index("guest_active_idx").using("btree", table.isActive.asc().nullsLast().op("bool_ops")),
+]);
+
+// Safety audits - for compliance and safety tracking
+export const safetyAudits = pgTable("safety_audits", {
+	id: text().primaryKey().notNull(),
+	pgId: text("pg_id").notNull(),
+	auditDate: timestamp("audit_date", { mode: 'string' }).defaultNow().notNull(),
+	status: auditStatus().default('PENDING').notNull(),
+	notes: text(),
+	auditor: text(),
+	issues: text().array().default([]).notNull(),
+	resolvedAt: timestamp("resolved_at", { mode: 'string' }),
+	createdAt: timestamp("created_at", { mode: 'string' }).defaultNow().notNull(),
+	updatedAt: timestamp("updated_at", { mode: 'string' }).defaultNow().notNull(),
+}, (table) => [
+	foreignKey({
+			columns: [table.pgId],
+			foreignColumns: [pgs.id],
+			name: "safety_audits_pg_id_pgs_id_fk"
+		}).onDelete("cascade"),
+	index("audit_pg_idx").using("btree", table.pgId.asc().nullsLast().op("text_ops")),
+	index("audit_status_idx").using("btree", table.status.asc().nullsLast().op("enum_ops")),
+	index("audit_date_idx").using("btree", table.auditDate.asc().nullsLast().op("timestamp_ops")),
 ]);
