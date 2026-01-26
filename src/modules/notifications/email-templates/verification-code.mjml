@@ -1,0 +1,21 @@
+<mjml>
+  <mj-body background-color="#f4f4f4">
+    <mj-section background-color="#ffffff" padding-bottom="0">
+      <mj-column width="100%">
+        <mj-image src="https://your-logo-url.com/logo.png" alt="Logo" width="150px" align="center" />
+        <mj-divider border-color="#F28C28"></mj-divider>
+      </mj-column>
+    </mj-section>
+    <mj-section background-color="#ffffff">
+      <mj-column>
+        <mj-text font-size="20px" color="#333" font-family="helvetica">
+          Hello! Here is your verification code:
+        </mj-text>
+        <mj-text font-size="32px" font-weight="bold" color="#F28C28" align="center">
+          {{otp}}
+        </mj-text>
+        <mj-text color="#555">This code will expire in 10 minutes.</mj-text>
+      </mj-column>
+    </mj-section>
+  </mj-body>
+</mjml>
