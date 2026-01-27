@@ -9,10 +9,10 @@ import { eq } from 'drizzle-orm';
  */
 export async function GET(
   request: Request,
-  { params }: { params: { pgId: string } }
+  { params }: { params: Promise<{ pgId: string }> }
 ) {
   try {
-    const { pgId } = params;
+    const { pgId } = await params;
 
     if (!pgId) {
       return NextResponse.json(
