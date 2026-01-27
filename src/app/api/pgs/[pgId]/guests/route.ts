@@ -3,20 +3,16 @@ import { db } from '@/db';
 import { guests } from '@/db/schema';
 import { eq } from 'drizzle-orm';
 
-type RouteContext = {
-  params: Promise<{ pgId: string }>;
-};
-
 /**
  * GET /api/pgs/{pgId}/guests
  * Fetch all guests for a specific property
  */
 export async function GET(
   request: NextRequest,
-  context: RouteContext
+  { params }: { params: Promise<{ pgId: string }> }
 ) {
   try {
-    const { pgId } = await context.params;
+    const { pgId } = await params;
 
     if (!pgId) {
       return NextResponse.json(
@@ -47,10 +43,10 @@ export async function GET(
  */
 export async function POST(
   request: Request,
-  context: RouteContext
+  { params }: { params: Promise<{ pgId: string }> }
 ) {
   try {
-    const { pgId } = await context.params;
+    const { pgId } = await params;
     const body = await request.json();
 
     if (!pgId) {

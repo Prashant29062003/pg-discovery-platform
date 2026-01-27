@@ -13,10 +13,10 @@ type RouteContext = {
  */
 export async function GET(
   request: Request,
-  context: RouteContext
+  { params }: { params: Promise<{ pgId: string }> }
 ) {
   try {
-    const { pgId } = await context.params;
+    const { pgId } = await params;
 
     if (!pgId) {
       return NextResponse.json(
@@ -47,10 +47,10 @@ export async function GET(
  */
 export async function POST(
   request: Request,
-  context: RouteContext
+  { params }: { params: Promise<{ pgId: string }> }
 ) {
   try {
-    const { pgId } = await context.params;
+    const { pgId } = await params;
     const body = await request.json();
 
     if (!pgId) {
