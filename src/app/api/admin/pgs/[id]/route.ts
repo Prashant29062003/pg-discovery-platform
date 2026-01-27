@@ -2,10 +2,14 @@ import { NextResponse } from 'next/server';
 import { updatePGInternal } from '@/modules/pg/pg.actions';
 import { ZodError } from 'zod';
 
-export async function PUT(request: Request, { params }: { params: Promise<{ id: string }> }) {
+type Context = {
+  params: Promise<{ id: string }>;
+};
+
+export async function PUT(request: Request, context: Context) {
   try {
     const body = await request.json();
-    const { id: pgId } = await params;
+    const { id: pgId } = await context.params;
     const result = await updatePGInternal(pgId, body);
     return NextResponse.json({ success: true, pgId: result.pgId });
   } catch (err: any) {

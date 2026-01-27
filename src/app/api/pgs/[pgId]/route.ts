@@ -6,12 +6,16 @@ import { pgs, rooms } from "@/db/schema";
 import { eq } from "drizzle-orm";
 import { dbPgSchema } from "@/lib/validators";
 
+type Context = {
+  params: Promise<{pgId: string}>
+}
+
 export async function GET(
   req: NextRequest,
-  { params }: { params: Promise<{ pgId: string }> }
+  context: Context
 ) {
   try {
-    const { pgId } = await params;
+    const { pgId } = await context.params;
     
     const pg = await db.select().from(pgs).where(eq(pgs.id, pgId));
 
@@ -44,13 +48,13 @@ export async function GET(
 
 export async function PUT(
   req: NextRequest,
-  { params }: { params: Promise<{ pgId: string }> }
+  context: Context
 ) {
   try {
     // Verify owner access
     await requireOwnerAccess();
 
-    const { pgId } = await params;
+    const { pgId } = await context.params;
     const { userId } = await auth();
 
     if (!userId) {
@@ -121,13 +125,13 @@ export async function PUT(
 
 export async function DELETE(
   req: NextRequest,
-  { params }: { params: Promise<{ pgId: string }> }
+  context: Context
 ) {
   try {
     // Verify owner access
     await requireOwnerAccess();
 
-    const { pgId } = await params;
+    const { pgId } = await context.params;
     const { userId } = await auth();
 
     if (!userId) {

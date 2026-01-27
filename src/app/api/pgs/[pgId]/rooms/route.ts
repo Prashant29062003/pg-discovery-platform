@@ -5,12 +5,16 @@ import { rooms, pgs } from "@/db/schema";
 import { eq } from "drizzle-orm";
 import { dbRoomSchema } from "@/lib/validators";
 
+type Context = {
+  params: Promise<{pgId: string}>
+}
+
 export async function GET(
   req: NextRequest,
-  { params }: { params: Promise<{ pgId: string }> }
+  context: Context
 ) {
   try {
-    const { pgId } = await params;
+    const { pgId } = await context.params;
     
     const roomsList = await db
       .select()
@@ -33,13 +37,13 @@ export async function GET(
 
 export async function POST(
   req: NextRequest,
-  { params }: { params: Promise<{ pgId: string }> }
+  context: Context
 ) {
   try {
     // Verify owner access
     await requireOwnerAccess();
 
-    const { pgId } = await params;
+    const { pgId } = await context.params;
     const body = await req.json();
 
     // ✅ VALIDATE PG EXISTS
