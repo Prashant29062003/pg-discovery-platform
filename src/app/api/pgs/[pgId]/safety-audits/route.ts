@@ -3,10 +3,6 @@ import { db } from '@/db';
 import { safetyAudits } from '@/db/schema';
 import { eq } from 'drizzle-orm';
 
-type RouteContext = {
-  params: Promise<{ pgId: string }>;
-};
-
 /**
  * GET /api/pgs/{pgId}/safety-audits
  * Fetch all safety audits for a specific property
