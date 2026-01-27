@@ -25,56 +25,39 @@ export function usePropertyData<T = any>({
   const [loading, setLoading] = useState(!pgId || pgId.length === 0 ? false : true);
   const [error, setError] = useState<string | null>(null);
 
-  // Get store methods based on data type
   const store = usePropertyDataStore();
-  
+
   const getCacheMethod = useCallback(() => {
     switch (dataType) {
-      case 'rooms':
-        return store.getRoomsFromCache;
-      case 'enquiries':
-        return store.getEnquiriesFromCache;
-      case 'guests':
-        return store.getGuestsFromCache;
-      case 'safety':
-        return store.getSafetyAuditsFromCache;
-      default:
-        return () => null;
+      case 'rooms': return store.getRoomsFromCache;
+      case 'enquiries': return store.getEnquiriesFromCache;
+      case 'guests': return store.getGuestsFromCache;
+      case 'safety': return store.getSafetyAuditsFromCache;
+      default: return () => null;
     }
   }, [dataType, store]);
 
   const setCacheMethod = useCallback(() => {
     switch (dataType) {
-      case 'rooms':
-        return store.setRooms;
-      case 'enquiries':
-        return store.setEnquiries;
-      case 'guests':
-        return store.setGuests;
-      case 'safety':
-        return store.setSafetyAudits;
-      default:
-        return () => {};
+      case 'rooms': return store.setRooms;
+      case 'enquiries': return store.setEnquiries;
+      case 'guests': return store.setGuests;
+      case 'safety': return store.setSafetyAudits;
+      default: return () => {};
     }
   }, [dataType, store]);
 
   const getApiEndpoint = useCallback(() => {
     switch (dataType) {
-      case 'rooms':
-        return `/api/pgs/${pgId}/rooms`;
-      case 'enquiries':
-        return `/api/pgs/${pgId}/enquiries`;
-      case 'guests':
-        return `/api/pgs/${pgId}/guests`;
-      case 'safety':
-        return `/api/pgs/${pgId}/safety-audits`;
-      default:
-        return '';
+      case 'rooms': return `/api/pgs/${pgId}/rooms`;
+      case 'enquiries': return `/api/pgs/${pgId}/enquiries`;
+      case 'guests': return `/api/pgs/${pgId}/guests`;
+      case 'safety': return `/api/pgs/${pgId}/safety-audits`;
+      default: return '';
     }
   }, [pgId, dataType]);
 
-  const fetchData = useCallback(async () => {
-    // Don't fetch if pgId is empty or invalid
+  const fetchData = useCallback(async (signal?: AbortSignal, forceRefresh = false) => {
     if (!pgId || pgId.length === 0) {
       setLoading(false);
       setError(null);
@@ -85,28 +68,29 @@ export function usePropertyData<T = any>({
       setLoading(true);
       setError(null);
 
-      // Fetch PG data only if not already set
+      // 1. Always ensure we have PG metadata
       if (!pg) {
-        const pgRes = await fetch(`/api/pgs/${pgId}`);
+        const pgRes = await fetch(`/api/pgs/${pgId}`, { signal });
         if (!pgRes.ok) throw new Error('Failed to fetch PG');
         const pgData = await pgRes.json();
         setPg(pgData);
       }
 
-      // Try to get from cache first
-      const getCache = getCacheMethod();
-      const cachedData = getCache(pgId);
-
-      if (cachedData) {
-        console.log(`[usePropertyData] Using cached ${dataType} data`);
-        setData(cachedData as T[]);
-        return;
+      // 2. Cache Check (Only if NOT forcing a refresh)
+      if (!forceRefresh) {
+        const cachedData = getCacheMethod()(pgId);
+        if (cachedData) {
+          console.log(`[usePropertyData] Serving ${dataType} from cache`);
+          setData(cachedData as T[]);
+          setLoading(false);
+          return;
+        }
       }
 
-      // Fetch from API if not cached
-      console.log(`[usePropertyData] Fetching ${dataType} from API`);
+      // 3. API Fetch (Redundant second cache check removed here)
+      console.log(`[usePropertyData] Fetching fresh ${dataType} from API`);
       const endpoint = getApiEndpoint();
-      const res = await fetch(endpoint);
+      const res = await fetch(endpoint, { signal });
 
       if (!res.ok) throw new Error(`Failed to fetch ${dataType}`);
 
@@ -114,11 +98,9 @@ export function usePropertyData<T = any>({
       const dataArray = Array.isArray(resData) ? resData : resData.data || [];
 
       setData(dataArray);
-
-      // Cache the data
-      const setCache = setCacheMethod();
-      setCache(pgId, dataArray);
-    } catch (err) {
+      setCacheMethod()(pgId, dataArray);
+    } catch (err: any) {
+      if (err.name === 'AbortError') return;
       setError(err instanceof Error ? err.message : `Failed to load ${dataType}`);
       setData(null);
     } finally {
@@ -127,14 +109,17 @@ export function usePropertyData<T = any>({
   }, [pgId, dataType, pg, getCacheMethod, setCacheMethod, getApiEndpoint]);
 
   useEffect(() => {
-    fetchData();
-  }, [pgId, dataType]); // Don't include fetchData to avoid infinite loops
+    const controller = new AbortController();
+    fetchData(controller.signal);
+    return () => controller.abort();
+  }, [fetchData]);
 
   return {
     data,
     pg,
     loading,
     error,
-    refetch: fetchData,
+    // Note: Use undefined for signal so fetch works normally on manual refetch
+    refetch: () => fetchData(undefined, true),
   };
 }

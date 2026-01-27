@@ -1,18 +1,22 @@
-import { NextResponse } from 'next/server';
+import { NextResponse, NextRequest } from 'next/server';
 import { db } from '@/db';
 import { enquiries } from '@/db/schema';
 import { eq } from 'drizzle-orm';
+
+type RouteContext = {
+  params: Promise<{ pgId: string }>;
+};
 
 /**
  * GET /api/pgs/{pgId}/enquiries
  * Fetch all enquiries for a specific property
  */
 export async function GET(
-  request: Request,
-  { params }: { params: Promise<{ pgId: string }> }
+  request: NextRequest,
+  context: RouteContext
 ) {
   try {
-    const { pgId } = await params;
+    const { pgId } = await context.params;
 
     if (!pgId) {
       return NextResponse.json(
