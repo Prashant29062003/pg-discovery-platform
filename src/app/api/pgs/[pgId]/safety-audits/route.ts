@@ -3,16 +3,20 @@ import { db } from '@/db';
 import { safetyAudits } from '@/db/schema';
 import { eq } from 'drizzle-orm';
 
+type RouteContext = {
+  params: Promise<{ pgId: string }>;
+};
+
 /**
  * GET /api/pgs/{pgId}/safety-audits
  * Fetch all safety audits for a specific property
  */
 export async function GET(
   request: Request,
-  { params }: { params: { pgId: string } }
+  context: RouteContext
 ) {
   try {
-    const { pgId } = params;
+    const { pgId } = await context.params;
 
     if (!pgId) {
       return NextResponse.json(
@@ -43,10 +47,10 @@ export async function GET(
  */
 export async function POST(
   request: Request,
-  { params }: { params: { pgId: string } }
+  context: RouteContext
 ) {
   try {
-    const { pgId } = params;
+    const { pgId } = await context.params;
     const body = await request.json();
 
     if (!pgId) {
