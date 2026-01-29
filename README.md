@@ -100,7 +100,7 @@ export async function createGuest(data: CreateGuestInput) {
 }
 ```
 
-## **AI Helper**
+## **AI Helpers**
 - **Git Copilot**: for documentation.
 - **Chat GPT**: for UI brain Storming.
 - **Google Gemini**: UI Polishing.
