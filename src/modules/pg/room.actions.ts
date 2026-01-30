@@ -21,9 +21,9 @@ import {
 } from './room.schema';
 
 /**
- * Create a new room in a PG
+ * Create a new room in a PG with beds
  */
-export async function createRoom(data: CreateRoomInput) {
+export async function createRoom(data: CreateRoomInput, bedsData?: Array<{ bedNumber: string; isOccupied: boolean }>) {
   const { userId } = await auth();
   if (!userId) throw new Error('Unauthorized');
 
@@ -41,8 +41,25 @@ export async function createRoom(data: CreateRoomInput) {
       basePrice: validated.basePrice,
       deposit: validated.deposit,
       noticePeriod: validated.noticePeriod,
+      capacity: bedsData?.length || 1,
     })
     .execute();
+
+  // Create beds if provided
+  if (bedsData && bedsData.length > 0) {
+    for (const bedData of bedsData) {
+      const bedId = `bed_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+      await db
+        .insert(beds)
+        .values({
+          id: bedId,
+          roomId: roomId,
+          bedNumber: bedData.bedNumber,
+          isOccupied: bedData.isOccupied,
+        })
+        .execute();
+    }
+  }
 
   // Selective cache revalidation
   await revalidateRoomCache(validated.pgId, roomId);
@@ -51,15 +68,53 @@ export async function createRoom(data: CreateRoomInput) {
 }
 
 /**
- * Update an existing room
+ * Update an existing room with beds
  */
-export async function updateRoom(roomId: string, data: UpdateRoomInput) {
+export async function updateRoom(roomId: string, data: UpdateRoomInput, bedsData?: Array<{ id?: string; bedNumber: string; isOccupied: boolean }>) {
   const { userId } = await auth();
   if (!userId) throw new Error('Unauthorized');
 
   const validated = updateRoomSchema.parse(data);
 
-  await db.update(rooms).set(validated).where(eq(rooms.id, roomId)).execute();
+  // Update room
+  await db.update(rooms).set({
+    ...validated,
+    capacity: bedsData?.length || 1,
+  }).where(eq(rooms.id, roomId)).execute();
+
+  // Update beds if provided
+  if (bedsData) {
+    // Get existing beds
+    const existingBeds = await db.select().from(beds).where(eq(beds.roomId, roomId)).execute();
+    const existingBedIds = new Set(existingBeds.map(bed => bed.id));
+    const newBedIds = new Set(bedsData.filter(bed => bed.id).map(bed => bed.id!));
+
+    // Delete beds that are no longer in the list
+    const bedsToDelete = existingBeds.filter(bed => !newBedIds.has(bed.id));
+    for (const bed of bedsToDelete) {
+      await db.delete(beds).where(eq(beds.id, bed.id)).execute();
+    }
+
+    // Update or create beds
+    for (const bedData of bedsData) {
+      if (bedData.id) {
+        // Update existing bed
+        await db.update(beds).set({
+          bedNumber: bedData.bedNumber,
+          isOccupied: bedData.isOccupied,
+        }).where(eq(beds.id, bedData.id)).execute();
+      } else {
+        // Create new bed
+        const bedId = `bed_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+        await db.insert(beds).values({
+          id: bedId,
+          roomId: roomId,
+          bedNumber: bedData.bedNumber,
+          isOccupied: bedData.isOccupied,
+        }).execute();
+      }
+    }
+  }
 
   // Get pgId to revalidate correct path
   const room = await db.select().from(rooms).where(eq(rooms.id, roomId)).execute();
