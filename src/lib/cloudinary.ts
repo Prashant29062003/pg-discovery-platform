@@ -20,6 +20,11 @@ export const isCloudinaryConfigured = () => {
   return !!CLOUDINARY_CONFIG.cloudName && !!CLOUDINARY_CONFIG.apiKey && !!CLOUDINARY_CONFIG.apiSecret;
 };
 
+// Client-side check - only checks public variables
+export const isCloudinaryClientConfigured = () => {
+  return !!CLOUDINARY_CONFIG.cloudName && !!CLOUDINARY_UPLOAD_PRESET;
+};
+
 /**
  * Cloudinary Upload Preset URL for client-side uploads
  * Generate an unsigned preset in Cloudinary dashboard for more security

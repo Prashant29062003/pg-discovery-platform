@@ -10,7 +10,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card } from '@/components/ui/card';
-import { toast } from 'sonner';
+import { showToast } from '@/utils/toast';
 import Link from 'next/link';
 import { ArrowLeft, Plus, AlertCircle } from 'lucide-react';
 import React from 'react';
@@ -58,10 +58,10 @@ export default function AddBedPage({ params: paramsPromise }: AddBedPageProps) {
         bedNumber: data.bedNumber,
         isOccupied: false,
       });
-      toast.success('Bed added successfully');
+      showToast.success("Bed Updated", `Bed #${data.bedNumber} has been saved successfully.`);
       router.push(`/admin/pgs/${params.pgId}/rooms/${params.roomId}/beds`);
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : 'Failed to add bed');
+      showToast.error("Bed addition failed", "There was an issue connecting to the database.");
       console.error(error);
     } finally {
       setIsSubmitting(false);

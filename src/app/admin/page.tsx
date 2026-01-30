@@ -38,19 +38,19 @@ export default async function DashboardPage() {
   const pendingEnquiries = pendingEnquiriesResult[0]?.count || 0;
 
   return (
-    <div className="w-full space-y-6 pb-20">
+    <div className="w-full space-y-6">
       
       {/* --- 1. HERO HEADER --- */}
-      <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 border-b border-zinc-200 dark:border-zinc-800 pb-6">
+      <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 border-b border-border pb-6">
         <div>
-          <div className="flex items-center gap-2 text-blue-600 mb-2">
+          <div className="flex items-center gap-2 text-blue-600 dark:text-blue-500 mb-2">
             <LayoutDashboard className="w-5 h-5" />
             <span className="text-sm font-bold uppercase tracking-wider">Management Console</span>
           </div>
-          <h1 className="text-3xl font-extrabold tracking-tight text-zinc-900 dark:text-white">
+          <h1 className="text-3xl font-extrabold tracking-tight text-foreground">
             Dashboard
           </h1>
-          <p className="text-zinc-500 dark:text-zinc-400 mt-1">
+          <p className="text-muted-foreground mt-1">
             Overview of your properties and performance.
           </p>
         </div>
@@ -69,16 +69,16 @@ export default async function DashboardPage() {
           { label: 'Urgent Leads', val: pendingEnquiries, sub: 'Needs Immediate Response', icon: Inbox, color: 'orange' },
           { label: 'Weekly Growth', val: recentEnquiries, sub: 'New Leads (7d)', icon: BarChart3, color: 'emerald' },
         ].map((stat, i) => (
-          <Card key={i} className="relative overflow-hidden border-zinc-200/60 dark:border-zinc-800 hover:shadow-md transition-shadow">
+          <Card key={i} className="relative overflow-hidden border-border hover:shadow-md transition-shadow">
             <div className={`absolute top-0 left-0 w-1 h-full bg-${stat.color}-500`} />
             <div className="p-6">
               <div className="flex items-center justify-between mb-4">
-                <p className="text-sm font-bold text-zinc-500 uppercase tracking-tighter">{stat.label}</p>
+                <p className="text-sm font-bold text-muted-foreground uppercase tracking-tighter">{stat.label}</p>
                 <stat.icon className={`w-5 h-5 text-${stat.color}-500 opacity-80`} />
               </div>
               <div className="flex items-baseline gap-2">
-                <span className="text-4xl font-black text-zinc-900 dark:text-white">{stat.val}</span>
-                <span className="text-xs font-medium text-zinc-400">{stat.sub}</span>
+                <span className="text-4xl font-black text-foreground">{stat.val}</span>
+                <span className="text-xs font-medium text-muted-foreground">{stat.sub}</span>
               </div>
             </div>
           </Card>
@@ -91,18 +91,18 @@ export default async function DashboardPage() {
         {/* Left Column (Lists) */}
         <div className="xl:col-span-2 space-y-8">
              {/* Recent Listings Card */}
-             <Card className="p-0 border-zinc-200 dark:border-zinc-800 overflow-hidden">
-                <div className="p-6 border-b border-zinc-100 dark:border-zinc-800 flex justify-between items-center bg-zinc-50/50 dark:bg-zinc-900/50">
-                    <h2 className="font-bold text-lg">Recent Listings</h2>
+             <Card className="p-0 border-border overflow-hidden">
+                <div className="p-6 border-b border-border flex justify-between items-center bg-muted/50">
+                    <h2 className="font-bold text-lg text-foreground">Recent Listings</h2>
                     <Link href="/admin/pgs">
-                      <Button variant="ghost" size="sm" className="text-blue-600 h-8">View All</Button>
+                      <Button variant="ghost" size="sm" className="text-blue-600 dark:text-blue-500 h-8">View All</Button>
                     </Link>
                 </div>
                 <div className="p-6 grid gap-4 sm:grid-cols-2">
                     {recentPGsList.map((pg) => (
-                        <div key={pg.id} className="group relative p-4 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 hover:border-orange-200 dark:hover:border-orange-900 transition-colors">
-                            <h3 className="font-bold text-zinc-900 dark:text-white">{pg.name}</h3>
-                            <p className="text-sm text-zinc-500 mb-4">{pg.city}, {pg.locality}</p>
+                        <div key={pg.id} className="group relative p-4 rounded-xl border border-border bg-card hover:border-orange-200 dark:hover:border-orange-800 transition-colors">
+                            <h3 className="font-bold text-foreground">{pg.name}</h3>
+                            <p className="text-sm text-muted-foreground mb-4">{pg.city}, {pg.locality}</p>
                             <div className="flex gap-2">
                                 <Link href={`/admin/pgs/${pg.id}/edit`} className="flex-1">
                                     <Button variant="outline" size="sm" className="w-full text-xs">Edit</Button>
@@ -120,21 +120,21 @@ export default async function DashboardPage() {
         {/* Right Column (Actions) */}
         <div className="space-y-6">
            {/* Quick Actions / Workflow */}
-           <Card className="bg-gradient-to-br from-zinc-900 to-zinc-800 text-white border-none p-6 shadow-xl">
-               <h3 className="font-bold text-lg mb-4 flex items-center gap-2">
-                  <CheckCircle2 className="text-green-400" /> Quick Tasks
+           <Card className="dark:bg-gradient-to-br dark:from-card dark:to-muted bg-muted/50 border-border p-6 shadow-xl">
+               <h3 className="font-bold text-lg mb-4 flex items-center gap-2 text-foreground">
+                  <CheckCircle2 className="text-green-500" /> Quick Tasks
                </h3>
                <div className="space-y-3">
                   {["Review new enquiries", "Update room pricing", "Check property status"].map((task, i) => (
-                      <div key={i} className="flex items-center gap-3 text-sm p-2 rounded hover:bg-white/10 cursor-pointer transition-colors">
+                      <div key={i} className="flex items-center gap-3 text-sm p-2 rounded hover:bg-accent cursor-pointer transition-colors">
                           <div className="w-1.5 h-1.5 rounded-full bg-orange-500" />
-                          {task}
+                          <span className="text-foreground">{task}</span>
                       </div>
                   ))}
                </div>
-               <Separator className="my-4 bg-white/20" />
+               <Separator className="my-4 bg-border" />
                <Link href="/admin/enquiries">
-                 <Button className="w-full bg-white text-zinc-900 hover:bg-zinc-100 font-bold">
+                 <Button className="w-full bg-card hover:bg-accent text-foreground font-bold border-border">
                      View Enquiries
                  </Button>
                </Link>

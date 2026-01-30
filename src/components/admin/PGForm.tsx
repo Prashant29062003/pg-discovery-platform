@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { AlertCircle, Save, X } from 'lucide-react';
-import { toast } from 'sonner';
+import { showToast } from '@/utils/toast';
 
 // Import utilities
 import { validateFormData } from './utils/validation';
@@ -107,7 +107,7 @@ export default function PGForm({ initialData }: PGFormProps) {
     const formErrors = validateFormData(form);
     if (Object.keys(formErrors).length > 0) {
       setErrors(formErrors);
-      toast.error('Please fill in all required fields');
+      showToast.error('Please fill in all required fields');
       return;
     }
 
@@ -132,12 +132,12 @@ export default function PGForm({ initialData }: PGFormProps) {
           const el = document.querySelector(`[name="${keys[0]}"]`) as HTMLElement | null;
           if (el && typeof el.focus === 'function') el.focus();
         }
-        toast.error('Validation failed. Please fix the highlighted fields');
+        showToast.error('Validation failed. Please fix the highlighted fields');
         return;
       }
 
       if (json?.success) {
-        toast.success('✅ PG saved successfully!');
+        showToast.success('PG saved successfully!');
         // Delay navigation to allow user to see success toast
         setTimeout(() => {
           router.push('/admin/pgs');
@@ -145,12 +145,12 @@ export default function PGForm({ initialData }: PGFormProps) {
       } else {
         const errorMsg = json?.message || 'Failed to save PG';
         setErrors({ submit: errorMsg });
-        toast.error(`❌ ${errorMsg}`);
+        showToast.error(`Failed to save PG: ${errorMsg}`);
       }
     } catch (err) {
       const errorMsg = err instanceof Error ? err.message : 'Failed to save PG';
       setErrors({ submit: errorMsg });
-      toast.error(`❌ ${errorMsg}`);
+      showToast.error(`Failed to save PG: ${errorMsg}`);
     } finally {
       setLoading(false);
     }

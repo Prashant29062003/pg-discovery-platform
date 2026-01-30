@@ -83,12 +83,12 @@ export function AdminNavbar() {
   }, [pathname]);
 
   return (
-    <nav className="sticky top-0 z-30 w-full bg-white/80 dark:bg-zinc-950/80 backdrop-blur-md border-b border-zinc-200 dark:border-zinc-800 px-4 h-16 flex items-center justify-between transition-colors">
+    <nav className="sticky top-0 z-30 w-full bg-card/80 backdrop-blur-md border-b border-border px-4 h-16 flex items-center justify-between transition-colors">
       
       <div className="flex items-center gap-2 md:gap-4 min-w-0 flex-1">
         <button
           onClick={() => setIsMobileOpen(!isMobileOpen)}
-          className="md:hidden p-2 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-600 shrink-0"
+          className="md:hidden p-2 rounded-lg hover:bg-accent text-muted-foreground shrink-0"
         >
           <Menu className="w-5 h-5" />
         </button>
@@ -98,7 +98,7 @@ export function AdminNavbar() {
           {/* Desktop: Show Admin Icon */}
           <Link 
             href="/admin" 
-            className="hidden md:flex items-center gap-1.5 text-zinc-500 hover:text-orange-600 transition-colors shrink-0"
+            className="hidden md:flex items-center gap-1.5 text-muted-foreground hover:text-orange-600 transition-colors shrink-0"
           >
             <LayoutDashboard className="w-4 h-4" />
             <span>Admin</span>
@@ -106,14 +106,14 @@ export function AdminNavbar() {
 
           {/* Mobile "Back" indicator if deep in routes */}
           {breadcrumbs.length > 1 && (
-             <Link href={breadcrumbs[breadcrumbs.length - 2].href} className="md:hidden p-1 text-zinc-400">
+             <Link href={breadcrumbs[breadcrumbs.length - 2].href} className="md:hidden p-1 text-muted-foreground">
                 <ChevronLeft className="w-4 h-4" />
              </Link>
           )}
 
           {/* Segment Divider (Desktop) */}
           {breadcrumbs.length > 0 && (
-            <ChevronRight className="hidden md:block w-4 h-4 mx-2 text-zinc-300 shrink-0" />
+            <ChevronRight className="hidden md:block w-4 h-4 mx-2 text-muted-foreground shrink-0" />
           )}
 
           {/* Breadcrumb List */}
@@ -128,18 +128,18 @@ export function AdminNavbar() {
                     index < breadcrumbs.length - 2 ? "hidden md:flex" : "flex"
                 )}>
                   {isLast ? (
-                    <span className="text-zinc-900 dark:text-zinc-100 truncate font-semibold px-1">
+                    <span className="text-foreground truncate font-semibold px-1">
                       {crumb.label}
                     </span>
                   ) : (
                     <>
                         <Link
                           href={crumb.href}
-                          className="text-zinc-500 hover:text-orange-600 transition-colors truncate max-w-[100px] md:max-w-[150px]"
+                          className="text-muted-foreground hover:text-orange-600 transition-colors truncate max-w-[100px] md:max-w-[150px]"
                         >
                           {crumb.label}
                         </Link>
-                        <ChevronRight className="w-4 h-4 mx-1 text-zinc-300 shrink-0" />
+                        <ChevronRight className="w-4 h-4 mx-1 text-muted-foreground shrink-0" />
                     </>
                   )}
                 </div>
@@ -152,7 +152,7 @@ export function AdminNavbar() {
       {/* RIGHT ACTIONS */}
       <div className="flex items-center gap-1 md:gap-2 shrink-0">
         <Link href="/" target="_blank" className="hidden lg:block">
-          <Button variant="ghost" size="sm" className="gap-2 text-zinc-500 hover:text-orange-600">
+          <Button variant="ghost" size="sm" className="gap-2 text-muted-foreground hover:text-orange-600">
             <Globe className="w-4 h-4" />
             <span>Live Site</span>
           </Button>
@@ -162,15 +162,15 @@ export function AdminNavbar() {
           variant="ghost"
           size="icon"
           onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-          className="rounded-full w-9 h-9 text-zinc-600 dark:text-zinc-400"
+          className="rounded-full w-9 h-9 text-muted-foreground"
         >
           <Sun className="h-5 w-5 block dark:hidden" />
           <Moon className="h-5 w-5 hidden dark:block" />
         </Button>
 
-        <div className="ml-1 md:ml-2 pl-2 md:pl-3 border-l border-zinc-200 dark:border-zinc-800 h-8 flex items-center">
+        <div className="ml-1 md:ml-2 pl-2 md:pl-3 border-l border-border h-8 flex items-center">
           {!isLoaded ? (
-            <div className="w-8 h-8 rounded-full bg-zinc-200 dark:bg-zinc-800 animate-pulse" />
+            <div className="w-8 h-8 rounded-full bg-muted animate-pulse" />
           ) : user ? (
             <UserMenu />
           ) : (

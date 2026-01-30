@@ -7,7 +7,7 @@
 
 import { useOptimistic } from 'react';
 import { useState } from 'react';
-import { toast } from 'sonner';
+import { showToast } from '@/utils/toast';
 import { toggleFeaturedPG } from '@/modules/pg/pg.actions';
 
 export function useOptimisticToggleFeatured(
@@ -35,16 +35,16 @@ export function useOptimisticToggleFeatured(
       
       if (!result.success) {
         setError('Failed to update');
-        toast.error('⭐ Failed to update featured status. Please try again.');
+        showToast.error('Failed to update featured status. Please try again.');
         // State will rollback automatically due to error
         addOptimisticFeatured(optimisticFeatured);
       } else {
-        toast.success(newFeaturedState ? '⭐ Property marked as featured!' : '⭐ Property removed from featured.');
+        showToast.success(newFeaturedState ? 'Property marked as featured!' : 'Property removed from featured.');
       }
     } catch (err) {
       const errorMsg = err instanceof Error ? err.message : 'An error occurred';
       setError(errorMsg);
-      toast.error(`⭐ Error: ${errorMsg}`);
+      showToast.error(`Error: ${errorMsg}`);
       // Rollback optimistic update on error
       addOptimisticFeatured(optimisticFeatured);
     }

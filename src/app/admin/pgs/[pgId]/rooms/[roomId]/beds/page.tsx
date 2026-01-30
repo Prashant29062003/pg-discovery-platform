@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { 
   Plus, ArrowLeft, Bed, Info 
@@ -13,6 +13,7 @@ import {
   EmptyStateDescription, EmptyStateAction 
 } from '@/components/ui/empty-state';
 import { cn } from '@/utils';
+import { getRoomBeds } from '@/modules/pg/room.actions';
 
 interface BedData {
   id: string;
@@ -27,15 +28,81 @@ interface BedsPageProps {
   }>;
 }
 
-// Note: Ensure this is a Client Component if using hooks, 
-// or keep as Server Component if 'getRoomBeds' is a server action.
-export default async function BedsPage({ params: paramsPromise }: BedsPageProps) {
-  // await requireOwnerAccess(); // Keep if server component
-  const { pgId, roomId } = await paramsPromise;
-  
-  // Mock data or fetch
-  // const beds = await getRoomBeds(roomId); 
-  const beds: BedData[] = []; 
+export default function BedsPage({ params: paramsPromise }: BedsPageProps) {
+  const [pgId, setPgId] = React.useState<string>('');
+  const [roomId, setRoomId] = React.useState<string>('');
+  const [beds, setBeds] = useState<BedData[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [initialized, setInitialized] = useState(false);
+
+  useEffect(() => {
+    (async () => {
+      const resolvedParams = await paramsPromise;
+      setPgId(resolvedParams.pgId);
+      setRoomId(resolvedParams.roomId);
+      setInitialized(true);
+    })();
+  }, [paramsPromise]);
+
+  useEffect(() => {
+    if (initialized && roomId) {
+      fetchBeds();
+    }
+  }, [initialized, roomId]);
+
+  async function fetchBeds() {
+    try {
+      setLoading(true);
+      setError(null);
+      const bedsData = await getRoomBeds(roomId);
+      setBeds(bedsData.map(bed => ({
+        id: bed.id,
+        bedNumber: bed.bedNumber || `Bed-${bed.id.slice(-4)}`,
+        isOccupied: bed.isOccupied
+      })));
+    } catch (err) {
+      setError('Failed to load beds');
+      console.error('Error fetching beds:', err);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  if (!initialized) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <div className="text-center">
+          <div className="animate-spin h-12 w-12 border-b-2 border-orange-600 rounded-full mx-auto mb-4"></div>
+          <p className="text-zinc-600 dark:text-zinc-400">Loading...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <div className="text-center">
+          <div className="animate-spin h-12 w-12 border-b-2 border-orange-600 rounded-full mx-auto mb-4"></div>
+          <p className="text-zinc-600 dark:text-zinc-400">Loading beds...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[400px] gap-4">
+        <div className="p-4 rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800">
+          <Info className="w-12 h-12 text-red-500 mb-2" />
+        </div>
+        <h3 className="text-lg font-semibold text-red-700 dark:text-red-400">Error loading beds</h3>
+        <p className="text-zinc-600 dark:text-zinc-400">{error}</p>
+        <Button onClick={fetchBeds} variant="outline">Try Again</Button>
+      </div>
+    );
+  } 
 
   return (
     <div className="space-y-8 max-w-6xl mx-auto pb-10">

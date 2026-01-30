@@ -7,7 +7,7 @@ import { Label } from '@/components/ui/label';
 import { Card } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { toast } from 'sonner';
-import { CLOUDINARY_CONFIG, isCloudinaryConfigured, DEFAULT_IMAGES } from '@/lib/cloudinary';
+import { CLOUDINARY_CONFIG, isCloudinaryClientConfigured, DEFAULT_IMAGES } from '@/lib/cloudinary';
 
 interface ImageUploadProps {
   onImagesChange: (urls: string[]) => void;
@@ -70,7 +70,7 @@ export function ImageUpload({
     onImageNamesChange?.(newNames);
   };
 
-  const cloudinaryConfigured = isCloudinaryConfigured();
+  const cloudinaryConfigured = isCloudinaryClientConfigured();
 
   const handleImageUpload = useCallback(
     async (files: FileList | null) => {
@@ -229,7 +229,7 @@ export function ImageUpload({
         <Alert variant="destructive">
           <AlertCircle className="h-4 w-4" />
           <AlertDescription>
-            ⚠️ Cloudinary is not configured. Set these env vars: NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, CLOUDINARY_API_SECRET. Using placeholder images as fallback.
+            ⚠️ Cloudinary client configuration incomplete. Set NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME and NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET. Using placeholder images as fallback.
           </AlertDescription>
         </Alert>
       )}

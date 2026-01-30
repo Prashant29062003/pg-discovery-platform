@@ -9,7 +9,7 @@ export default function AdminLayoutWrapper({ children }: { children: ReactNode }
     const { isOpen } = useSidebar();
 
     return (
-        <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950 font-sans text-zinc-900 dark:text-zinc-100 selection:bg-orange-100 selection:text-orange-900">
+        <div className="min-h-screen bg-background font-sans text-foreground selection:bg-orange-100 selection:text-orange-900 overflow-hidden">
 
             {/* Fixed Sidebar */}
             <AdminSidebar />
@@ -20,8 +20,8 @@ export default function AdminLayoutWrapper({ children }: { children: ReactNode }
             >
                 <AdminNavbar />
 
-                <main className="flex-1 px-4 md:px-8 pb-8 overflow-y-auto">
-                    <div className="max-w-7xl mx-auto w-full py-5">
+                <main className="flex-1 px-4 md:px-6 lg:px-8 pb-6 pt-16 overflow-y-auto">
+                    <div className="max-w-7xl mx-auto w-full py-4">
                         {children}
                     </div>
                 </main>

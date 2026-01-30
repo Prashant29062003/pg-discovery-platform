@@ -7,7 +7,7 @@
 
 import { useOptimistic } from 'react';
 import { useState } from 'react';
-import { toast } from 'sonner';
+import { showToast } from '@/utils/toast';
 import { updateBed } from '@/modules/pg/room.actions';
 
 export interface BedState {
@@ -48,16 +48,16 @@ export function useOptimisticUpdateBed(
       
       if (!result.success) {
         setError('Failed to update bed');
-        toast.error('🛏️ Failed to update bed status. Please try again.');
+        showToast.error('Failed to update bed status. Please try again.');
         // Rollback optimistic update on error
         addOptimisticBed(previousOccupancy);
       } else {
-        toast.success(newOccupancy ? '🛏️ Bed marked as occupied.' : '🛏️ Bed marked as available.');
+        showToast.success(newOccupancy ? 'Bed marked as occupied.' : 'Bed marked as available.');
       }
     } catch (err) {
       const errorMsg = err instanceof Error ? err.message : 'An error occurred';
       setError(errorMsg);
-      toast.error(`🛏️ Error: ${errorMsg}`);
+      showToast.error(`Error: ${errorMsg}`);
       // Rollback optimistic update on error
       addOptimisticBed(previousOccupancy);
     }

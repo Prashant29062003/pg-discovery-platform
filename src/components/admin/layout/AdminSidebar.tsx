@@ -84,19 +84,19 @@ export function AdminSidebar() {
                         </div>
                         {showLabel && (
                             <div className="flex flex-col">
-                                <span className="font-bold text-base tracking-tight leading-none dark:text-white">Admin<span className="text-orange-600">Panel</span></span>
-                                <span className="text-[10px] text-zinc-400 font-medium uppercase tracking-widest mt-1">
+                                <span className="font-bold text-base tracking-tight leading-none text-foreground">Admin<span className="text-orange-600 dark:text-orange-500">Panel</span></span>
+                                <span className="text-[10px] text-muted-foreground font-medium uppercase tracking-widest mt-1">
                                     {pgId ? "Property View" : "Main Hub"}
                                 </span>
                             </div>
                         )}
                     </div>
                     {isMobile ? (
-                        <button onClick={() => setIsMobileOpen(false)} className="p-2 text-zinc-400 hover:text-zinc-900 dark:hover:text-white">
+                        <button onClick={() => setIsMobileOpen(false)} className="p-2 text-muted-foreground hover:text-foreground">
                             <X className="w-5 h-5" />
                         </button>
                     ) : (
-                        <button onClick={() => setIsOpen(!isOpen)} className="hidden md:flex p-1.5 rounded-md hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-400 transition-colors">
+                        <button onClick={() => setIsOpen(!isOpen)} className="hidden md:flex p-1.5 rounded-md hover:bg-accent text-muted-foreground transition-colors">
                             <ChevronLeft className={cn("w-5 h-5 transition-transform duration-300", !isOpen && "rotate-180")} />
                         </button>
                     )}
@@ -107,7 +107,7 @@ export function AdminSidebar() {
                     <div className="px-3 mb-6">
                         <Link 
                             href="/admin/pgs"
-                            className="flex items-center gap-2 px-3 py-2 rounded-lg bg-zinc-100 dark:bg-zinc-900 text-zinc-600 dark:text-zinc-400 hover:text-orange-600 transition-colors text-xs font-bold border border-zinc-200 dark:border-zinc-800"
+                            className="flex items-center gap-2 px-3 py-2 rounded-lg bg-muted text-muted-foreground hover:text-orange-600 transition-colors text-xs font-bold border border-border"
                         >
                             <ArrowLeft className="w-3 h-3" />
                             Back to All Properties
@@ -120,7 +120,7 @@ export function AdminSidebar() {
                     {activeGroups.map((group, gIdx) => (
                         <div key={gIdx} className="space-y-1">
                             {showLabel && (
-                                <p className="px-4 text-[10px] font-bold text-zinc-400 uppercase tracking-widest mb-2">
+                                <p className="px-4 text-[10px] font-bold text-muted-foreground uppercase tracking-widest mb-2">
                                     {group.group}
                                 </p>
                             )}
@@ -137,18 +137,18 @@ export function AdminSidebar() {
                                                         "flex items-center relative group rounded-xl transition-all duration-200",
                                                         showLabel ? "px-4 py-2.5 gap-3" : "justify-center p-3 aspect-square",
                                                         active 
-                                                            ? "bg-orange-50 dark:bg-orange-500/10 text-orange-600" 
-                                                            : "text-zinc-500 hover:bg-zinc-50 dark:hover:bg-zinc-900 hover:text-zinc-900 dark:hover:text-zinc-100"
+                                                            ? "bg-accent-subtle text-foreground" 
+                                                            : "text-muted-foreground hover:bg-accent hover:text-foreground"
                                                     )}
                                                 >
                                                     <item.icon className={cn("shrink-0", active ? "w-5 h-5" : "w-5 h-5 group-hover:scale-110 transition-transform")} />
                                                     {showLabel && <span className="text-sm font-semibold whitespace-nowrap">{item.label}</span>}
                                                     {active && !showLabel && (
-                                                        <motion.div layoutId="active-pill-desktop" className="absolute left-0 w-1 h-6 bg-orange-600 rounded-r-full" />
+                                                        <motion.div layoutId="active-pill-desktop" className="absolute left-0 w-1 h-6 bg-accent rounded-r-full" />
                                                     )}
                                                 </Link>
                                             </TooltipTrigger>
-                                            {!showLabel && <TooltipContent side="right" className="bg-zinc-900 text-white border-none">{item.label}</TooltipContent>}
+                                            {!showLabel && <TooltipContent side="right" className="bg-card text-foreground border-border">{item.label}</TooltipContent>}
                                         </Tooltip>
                                     );
                                 })}
@@ -158,17 +158,17 @@ export function AdminSidebar() {
                 </nav>
 
                 {/* Footer Actions */}
-                <div className="px-3 mt-auto space-y-4 pt-4 border-t border-zinc-100 dark:border-zinc-800">
+                <div className="px-3 mt-auto space-y-4 pt-4 border-t border-border">
                     {!pgId && (
                         <Link href="/admin/pgs/new" onClick={() => isMobile && setIsMobileOpen(false)}>
-                            <button className={cn("w-full flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl text-sm font-bold bg-orange-600 text-white hover:bg-orange-700 transition-all shadow-md shadow-orange-600/10", !showLabel && "aspect-square p-0")}>
+                            <button className={cn("w-full flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl text-sm font-bold bg-accent text-foreground hover:bg-accent-hover transition-all shadow-md shadow-accent/10", !showLabel && "aspect-square p-0")}>
                                 <Plus className="w-5 h-5" />
                                 {showLabel && <span>New Property</span>}
                             </button>
                         </Link>
                     )}
 
-                    <div className={cn("flex items-center gap-3 p-1.5 rounded-xl bg-zinc-50 dark:bg-zinc-900/50 border border-zinc-200/50 dark:border-zinc-800", !showLabel && "justify-center")}>
+                    <div className={cn("flex items-center gap-3 p-1.5 rounded-xl bg-muted border-border", !showLabel && "justify-center")}>
                         <UserMenu />
                     </div>
                 </div>
@@ -178,15 +178,15 @@ export function AdminSidebar() {
 
     return (
         <>
-            <aside className={cn("hidden md:flex flex-col fixed inset-y-0 left-0 z-30 bg-white dark:bg-zinc-950 border-r border-zinc-200 dark:border-zinc-800 transition-all duration-300", isOpen ? "w-64" : "w-20")}>
+            <aside className={cn("hidden md:flex flex-col fixed inset-y-0 left-0 z-30 bg-card border-r border-border transition-all duration-300", isOpen ? "w-64" : "w-20")}>
                 <SidebarContent />
             </aside>
 
             <AnimatePresence>
                 {isMobileOpen && (
                     <div className="md:hidden fixed inset-0 z-[60]">
-                        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="absolute inset-0 bg-zinc-950/60 backdrop-blur-sm" onClick={() => setIsMobileOpen(false)} />
-                        <motion.aside initial={{ x: "-100%" }} animate={{ x: 0 }} exit={{ x: "-100%" }} transition={{ type: "spring", damping: 25, stiffness: 200 }} className="absolute inset-y-0 left-0 w-[280px] bg-white dark:bg-zinc-950 shadow-2xl">
+                        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="absolute inset-0 bg-foreground/60 backdrop-blur-sm" onClick={() => setIsMobileOpen(false)} />
+                        <motion.aside initial={{ x: "-100%" }} animate={{ x: 0 }} exit={{ x: "-100%" }} transition={{ type: "spring", damping: 25, stiffness: 200 }} className="absolute inset-y-0 left-0 w-[280px] bg-card shadow-2xl">
                             <SidebarContent isMobile />
                         </motion.aside>
                     </div>
