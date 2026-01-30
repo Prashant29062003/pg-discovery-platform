@@ -3,7 +3,7 @@
 import React from 'react';
 import Link from 'next/link';
 import { 
-  Plus, ArrowLeft, DoorOpen, AlertCircle 
+  Plus, ArrowLeft, DoorOpen, AlertCircle, RefreshCw 
 } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
@@ -26,12 +26,59 @@ interface RoomsPageProps {
 export default function RoomsPage({ params: paramsPromise }: RoomsPageProps) {
   const [pgId, setPgId] = React.useState<string>('');
   const [initialized, setInitialized] = React.useState(false);
+  const [rooms, setRooms] = React.useState<any[]>([]);
+  const [pg, setPg] = React.useState<any>(null);
+  const [loading, setLoading] = React.useState(false);
+  const [error, setError] = React.useState<string | null>(null);
 
-  // Use optimized hook for data fetching with caching (only when pgId is set)
-  const { data: rooms, pg, loading, error } = usePropertyData({
-    pgId,
-    dataType: 'rooms',
-  });
+  // Direct fetch function bypassing cache
+  const fetchRoomsDirect = async () => {
+    if (!pgId) return;
+    
+    try {
+      setLoading(true);
+      setError(null);
+      console.log('🔄 Fetching rooms directly from database...');
+      
+      const response = await fetch(`/api/rooms-direct?pgId=${pgId}`);
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
+      const data = await response.json();
+      console.log('📊 Direct fetch result:', data);
+      console.log('📊 Data type:', typeof data);
+      console.log('📊 Is array?', Array.isArray(data));
+      
+      if (Array.isArray(data)) {
+        setRooms(data);
+      } else {
+        console.error('❌ Expected array but got:', data);
+        setRooms([]);
+        setError('Invalid data format received');
+      }
+    } catch (err: any) {
+      console.error('❌ Direct fetch error:', err);
+      setError('Failed to fetch rooms: ' + (err?.message || 'Unknown error'));
+      setRooms([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Fetch PG data
+  const fetchPgData = async () => {
+    if (!pgId) return;
+    
+    try {
+      const response = await fetch(`/api/pgs/${pgId}`);
+      const data = await response.json();
+      setPg(data);
+    } catch (err) {
+      console.error('❌ Failed to fetch PG data:', err);
+    }
+  };
 
   React.useEffect(() => {
     (async () => {
@@ -40,6 +87,13 @@ export default function RoomsPage({ params: paramsPromise }: RoomsPageProps) {
       setInitialized(true);
     })();
   }, [paramsPromise]);
+
+  React.useEffect(() => {
+    if (initialized && pgId) {
+      fetchPgData();
+      fetchRoomsDirect();
+    }
+  }, [initialized, pgId]);
 
   if (!initialized || !pgId) {
     return (
@@ -100,12 +154,28 @@ export default function RoomsPage({ params: paramsPromise }: RoomsPageProps) {
           </p>
         </div>
 
-        <Link href={`/admin/pgs/${pgId}/rooms/new`}>
-          <Button size="lg" className="gap-2 bg-orange-600 hover:bg-orange-700 text-white shadow-md hover:shadow-lg transition-all w-full md:w-auto">
-            <Plus className="w-5 h-5" />
-            Add New Room
+        <div className="flex items-center justify-between gap-4">
+          <Link href={`/admin/pgs/${pgId}/rooms/new`}>
+            <Button 
+              size="lg" 
+              className="gap-2 bg-orange-600 hover:bg-orange-700 text-white shadow-md hover:shadow-lg transition-all"
+            >
+              <Plus className="w-5 h-5" />
+              Add New Room
+            </Button>
+          </Link>
+          
+          <Button 
+            variant="outline" 
+            size="lg"
+            className="gap-2"
+            onClick={fetchRoomsDirect}
+            disabled={loading}
+          >
+            <RefreshCw className={`w-5 h-5 ${loading ? 'animate-spin' : ''}`} />
+            Refresh
           </Button>
-        </Link>
+        </div>
       </div>
 
       {/* 1.5. PROPERTY NAV TABS */}
@@ -135,9 +205,12 @@ export default function RoomsPage({ params: paramsPromise }: RoomsPageProps) {
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {!rooms || rooms.map((room) => (
-            <RoomListItem key={room.id} room={room} pgId={pgId} />
-          ))}
+          {Array.isArray(rooms) && rooms.map((room) => {
+            console.log(`🏠 Rendering room: ${room.roomNumber} - Type: ${room.type} - Beds: ${room.bedCount}`);
+            return (
+              <RoomListItem key={room.id} room={room} pgId={pgId} />
+            );
+          })}
         </div>
       )}
 

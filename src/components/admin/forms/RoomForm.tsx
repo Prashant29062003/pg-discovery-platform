@@ -17,8 +17,11 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Card } from '@/components/ui/card';
-import { toast } from 'sonner';
-import { Home, IndianRupee, Layers3, AlertCircle } from 'lucide-react';
+import { showToast } from '@/utils/toast';
+import { Home, IndianRupee, Layers3, AlertCircle, Bug, CheckCircle, AlertTriangle } from 'lucide-react';
+import { BedManager } from '@/components/admin/BedManager';
+import { getRoomTypeByBedCount, getRoomTypeDisplayName } from '@/lib/room-utils';
+import { useRoomNumberValidation } from '@/hooks/useValidation';
 
 const roomFormSchema = z.object({
   roomNumber: z.string().min(1, 'Room number is required'),
@@ -40,11 +43,16 @@ interface RoomFormProps {
   pgId: string;
   roomId?: string;
   initialData?: Partial<RoomFormData>;
+  initialBeds?: Array<{ id: string; bedNumber: string; isOccupied: boolean }>;
 }
 
-export function RoomForm({ pgId, roomId, initialData }: RoomFormProps) {
+export function RoomForm({ pgId, roomId, initialData, initialBeds = [] }: RoomFormProps) {
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [beds, setBeds] = useState<Array<{ id: string; bedNumber: string; isOccupied: boolean }>>(initialBeds);
+
+  // Real-time validation for room number
+  const { validation, validateRoomNumber, resetValidation } = useRoomNumberValidation(pgId, roomId);
 
   const {
     register,
@@ -52,11 +60,13 @@ export function RoomForm({ pgId, roomId, initialData }: RoomFormProps) {
     handleSubmit,
     formState: { errors },
     watch,
+    setValue,
+    trigger,
   } = useForm<RoomFormData>({
     resolver: zodResolver(roomFormSchema),
     defaultValues: {
       roomNumber: initialData?.roomNumber || '',
-      type: initialData?.type || 'SINGLE',
+      type: initialData?.type || getRoomTypeByBedCount(initialBeds.length),
       basePrice: String(initialData?.basePrice || ''),
       deposit: String(initialData?.deposit || ''),
       noticePeriod: initialData?.noticePeriod || '1 Month',
@@ -64,28 +74,79 @@ export function RoomForm({ pgId, roomId, initialData }: RoomFormProps) {
   });
 
   const roomType = watch('type');
+  const roomNumber = watch('roomNumber');
 
+  // Debug function to check actual database state
+  const debugRoomType = async () => {
+    if (!roomId) return;
+    
+    try {
+      const response = await fetch(`/api/debug-room-type?roomId=${roomId}`);
+      const data = await response.json();
+      
+      console.log('🐛 Debug Room Type Data:', data);
+      
+      showToast.info('Debug Info', `Room ${data.roomNumber}: ${data.currentType} (${data.bedCount} beds) - Expected: ${data.expectedType} - Matches: ${data.typeMatches ? '✅' : '❌'}`);
+    } catch (error) {
+      console.error('Debug error:', error);
+      showToast.error('Debug failed', 'Could not fetch room data');
+    }
+  };
+
+  // Handle beds change - update room type based on bed count
+  const handleBedsChange = (beds: Array<{ id: string; bedNumber: string; isOccupied: boolean }>) => {
+    console.log('handleBedsChange called with beds:', beds.length, 'beds');
+    setBeds(beds); // Update local state
+    const suggestedType = getRoomTypeByBedCount(beds.length);
+    console.log('Suggested room type:', suggestedType, 'Current room type:', roomType);
+    if (suggestedType !== roomType) {
+      console.log('Updating form room type from', roomType, 'to', suggestedType);
+      setValue('type', suggestedType);
+    } else {
+      console.log('Room type already matches, no update needed');
+    }
+  };
+
+  // Handle room number change with validation
+  const handleRoomNumberChange = async (value: string) => {
+    setValue('roomNumber', value);
+    if (value.trim()) {
+      await validateRoomNumber(value);
+    } else {
+      resetValidation();
+    }
+  };
+
+  // Enhanced form submission with validation
   async function onSubmit(data: RoomFormData) {
+    // Validate room number before submission
+    const isRoomNumberValid = await validateRoomNumber(data.roomNumber);
+    if (!isRoomNumberValid) {
+      showToast.error('Validation Error', 'Room number already exists');
+      return;
+    }
+
     setIsSubmitting(true);
     try {
       const roomData = {
-        roomNumber: data.roomNumber,
+        roomNumber: data.roomNumber.toUpperCase().trim(),
         type: data.type,
         basePrice: parseFloat(data.basePrice),
         deposit: data.deposit ? parseFloat(data.deposit) : undefined,
         pgId,
         noticePeriod: data.noticePeriod || '1 Month',
       };
+      
       if (roomId) {
-        await updateRoom(roomId, roomData);
-        toast.success('Room updated successfully');
+        await updateRoom(roomId, roomData, beds);
+        showToast.success("Room Updated", `Room #${roomData.roomNumber} has been saved successfully.`);
       } else {
-        await createRoom(roomData);
-        toast.success('Room created successfully');
+        await createRoom(roomData, beds);
+        showToast.success("Room Created", `Room #${roomData.roomNumber} has been created successfully.`);
       }
       router.push(`/admin/pgs/${pgId}/rooms`);
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : 'Failed to save room');
+      showToast.error("Update Failed", "There was an issue connecting to the database.");
       console.error(error);
     } finally {
       setIsSubmitting(false);
@@ -125,25 +186,40 @@ export function RoomForm({ pgId, roomId, initialData }: RoomFormProps) {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
             {/* Room Number */}
             <div className="space-y-2">
-              <Label htmlFor="roomNumber" className="text-sm font-semibold text-zinc-900 dark:text-zinc-50 flex items-center gap-2">
-                <span>Room Number</span>
-                <span className="text-red-500">*</span>
+              <Label htmlFor="roomNumber" className="text-sm font-medium">
+                Room Number <span className="text-red-500">*</span>
               </Label>
-              <Input
-                id="roomNumber"
-                {...register('roomNumber')}
-                placeholder="e.g., 101, A-1"
-                className={`h-10 transition-all ${
-                  errors.roomNumber
-                    ? 'border-red-500 dark:border-red-500 focus:ring-red-500'
-                    : 'border-zinc-200 dark:border-zinc-800 focus:border-orange-500 dark:focus:border-orange-500'
-                }`}
-              />
-              {errors.roomNumber && (
-                <div className="flex items-center gap-1.5 mt-1.5 text-sm text-red-600 dark:text-red-400">
-                  <AlertCircle className="w-3.5 h-3.5" />
-                  {errors.roomNumber.message}
+              <div className="relative">
+                <Input
+                  id="roomNumber"
+                  {...register('roomNumber', { required: 'Room number is required' })}
+                  placeholder="e.g., 101, A1, 201"
+                  className={`h-11 pr-10 ${
+                    errors.roomNumber ? 'border-red-500' : 
+                    !validation.isValid && validation.message ? 'border-orange-500' : 
+                    validation.isValid && validation.message ? 'border-green-500' : ''
+                  }`}
+                  onChange={(e) => handleRoomNumberChange(e.target.value)}
+                />
+                <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
+                  {validation.isLoading ? (
+                    <div className="animate-spin h-4 w-4 border-2 border-orange-600 border-t-transparent rounded-full"></div>
+                  ) : !validation.isValid && validation.message ? (
+                    <AlertTriangle className="h-4 w-4 text-orange-500" />
+                  ) : validation.isValid && validation.message ? (
+                    <CheckCircle className="h-4 w-4 text-green-500" />
+                  ) : null}
                 </div>
+              </div>
+              {errors.roomNumber && (
+                <p className="text-xs text-red-500">{errors.roomNumber.message}</p>
+              )}
+              {!errors.roomNumber && validation.message && (
+                <p className={`text-xs ${
+                  !validation.isValid ? 'text-orange-500' : 'text-green-500'
+                }`}>
+                  {validation.message}
+                </p>
               )}
             </div>
 
@@ -152,7 +228,9 @@ export function RoomForm({ pgId, roomId, initialData }: RoomFormProps) {
               <Label htmlFor="type" className="text-sm font-semibold text-zinc-900 dark:text-zinc-50 flex items-center gap-2">
                 <Layers3 className="w-4 h-4" />
                 <span>Room Type</span>
-                <span className="text-red-500">*</span>
+                <span className="text-xs text-orange-600 bg-orange-100 dark:bg-orange-900/30 px-2 py-0.5 rounded">
+                  Auto-set by beds
+                </span>
               </Label>
               <Controller
                 name="type"
@@ -166,13 +244,25 @@ export function RoomForm({ pgId, roomId, initialData }: RoomFormProps) {
                       <SelectItem value="SINGLE">Single (1 Bed)</SelectItem>
                       <SelectItem value="DOUBLE">Double (2 Beds)</SelectItem>
                       <SelectItem value="TRIPLE">Triple (3 Beds)</SelectItem>
-                      <SelectItem value="OTHER">Other</SelectItem>
+                      <SelectItem value="OTHER">Multi-Occupancy (4+ Beds)</SelectItem>
                     </SelectContent>
                   </Select>
                 )}
               />
+              <p className="text-xs text-muted-foreground">
+                Current: {getRoomTypeDisplayName(roomType as any)}
+              </p>
             </div>
           </div>
+
+          {/* Bed Management Section */}
+          <BedManager
+            roomId={roomId}
+            pgId={pgId}
+            roomNumber={watch('roomNumber')}
+            initialBeds={initialBeds}
+            onBedsChange={handleBedsChange}
+          />
 
           {/* Pricing Section */}
           <div className={`bg-gradient-to-br ${getRoomTypeColor()} rounded-lg p-5 border border-zinc-100 dark:border-zinc-800/50`}>
@@ -253,6 +343,20 @@ export function RoomForm({ pgId, roomId, initialData }: RoomFormProps) {
             >
               Cancel
             </Button>
+            
+            {roomId && (
+              <Button
+                type="button"
+                variant="outline"
+                onClick={debugRoomType}
+                disabled={isSubmitting}
+                className="h-10 px-4 text-sm font-medium gap-2"
+              >
+                <Bug className="w-4 h-4" />
+                Debug
+              </Button>
+            )}
+            
             <Button 
               type="submit" 
               disabled={isSubmitting}
