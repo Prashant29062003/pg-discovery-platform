@@ -63,9 +63,9 @@ const itemVariants: Variants = {
 
 export default function ExperienceSection() {
     return (
-        <section id="experience" className="relative bg-white dark:bg-zinc-950 py-20 lg:py-32 overflow-hidden transition-colors">
+        <section id="experience" className="relative bg-background py-20 lg:py-32 overflow-hidden transition-colors">
             {/* Subtle Background Glow for UX */}
-            <div className="absolute top-0 right-0 -z-10 h-[500px] w-[500px] bg-orange-500/5 blur-[120px] rounded-full" />
+            <div className="absolute top-0 right-0 -z-10 h-[500px] w-[500px] bg-primary/5 blur-[120px] rounded-full" />
             
             <div className="mx-auto max-w-7xl px-6 lg:px-12">
                 <div className="grid lg:grid-cols-2 gap-12 lg:gap-20 items-center">
@@ -129,14 +129,14 @@ export default function ExperienceSection() {
                             whileInView={{ opacity: 1, y: 0 }}
                             viewport={{ once: true }}
                             transition={{ delay: 0.6 }}
-                            className="absolute -bottom-6 -left-2 md:-left-12 bg-white/95 dark:bg-zinc-900/95 backdrop-blur-md p-4 md:p-5 rounded-2xl md:rounded-3xl shadow-xl border border-zinc-200 dark:border-white/10 flex items-center gap-4 z-20"
+                            className="absolute -bottom-6 -left-2 md:-left-12 bg-card/95 backdrop-blur-md p-4 md:p-5 rounded-2xl md:rounded-3xl shadow-xl border border-border flex items-center gap-4 z-20"
                         >
                             <div className="h-10 w-10 md:h-12 md:w-12 bg-orange-600 rounded-xl flex items-center justify-center text-white shadow-lg shadow-orange-500/20">
                                 <ShieldCheck className="h-5 w-5 md:h-6 md:w-6" />
                             </div>
                             <div>
-                                <p className="font-bold text-zinc-900 dark:text-white text-sm md:text-base">Premium Security</p>
-                                <p className="text-[10px] text-zinc-500 uppercase tracking-wider font-bold">Verified Sanctuary</p>
+                                <p className="font-bold text-foreground text-sm md:text-base">Premium Security</p>
+                                <p className="text-[10px] text-muted-foreground uppercase tracking-wider font-bold">Verified Sanctuary</p>
                             </div>
                         </motion.div>
                     </div>
@@ -155,12 +155,12 @@ export default function ExperienceSection() {
                                 <span className="text-orange-700 dark:text-orange-400 text-[10px] font-bold uppercase tracking-widest">The Elite Standard</span>
                             </motion.div>
 
-                            <motion.h2 variants={itemVariants} className="text-4xl md:text-6xl lg:text-7xl font-extrabold tracking-tight text-zinc-900 dark:text-white leading-[1.1] text-balance">
+                            <motion.h2 variants={itemVariants} className="text-4xl md:text-6xl lg:text-7xl font-extrabold tracking-tight text-foreground leading-[1.1] text-balance">
                                 Not just a PG, <br />
-                                <span className="text-orange-600 italic font-medium">your sanctuary.</span>
+                                <span className="text-orange-600 dark:text-orange-500 italic font-medium">your sanctuary.</span>
                             </motion.h2>
                             
-                            <motion.p variants={itemVariants} className="text-zinc-500 dark:text-zinc-400 text-base md:text-lg max-w-lg leading-relaxed font-medium text-pretty">
+                            <motion.p variants={itemVariants} className="text-muted-foreground text-base md:text-lg max-w-lg leading-relaxed font-medium text-pretty">
                                 Elevate your living experience with high-end hospitality and a community designed for high-performers.
                             </motion.p>
 
@@ -171,13 +171,13 @@ export default function ExperienceSection() {
                                         key={index}
                                         variants={itemVariants}
                                         whileHover={{ y: -4 }}
-                                        className="p-6 rounded-3xl bg-zinc-50/50 dark:bg-zinc-900/40 border border-zinc-100 dark:border-white/5 hover:bg-white dark:hover:bg-zinc-800 transition-all duration-300 group shadow-sm hover:shadow-xl"
+                                        className="p-6 rounded-3xl bg-muted/50 border border-border hover:bg-card transition-all duration-300 group shadow-sm hover:shadow-xl"
                                     >
                                         <div className={`h-10 w-10 rounded-xl ${exp.bg} ${exp.color} flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300`}>
                                             {exp.icon}
                                         </div>
-                                        <h4 className="font-bold text-zinc-900 dark:text-white text-md mb-1.5">{exp.title}</h4>
-                                        <p className="text-xs text-zinc-500 dark:text-zinc-400 leading-normal">{exp.desc}</p>
+                                        <h4 className="font-bold text-foreground text-md mb-1.5">{exp.title}</h4>
+                                        <p className="text-xs text-muted-foreground leading-normal">{exp.desc}</p>
                                     </motion.div>
                                 ))}
                             </div>

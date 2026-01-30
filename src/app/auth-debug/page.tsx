@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import Link from 'next/link';
 import { useState } from 'react';
-import { toast } from 'sonner';
+import { showToast } from '@/utils/toast';
 
 export default function AuthDebugPage() {
   const [isLoading, setIsLoading] = useState(false);
@@ -13,7 +13,7 @@ export default function AuthDebugPage() {
     setIsLoading(true);
     try {
       // This page is just for testing - in production you'd use proper auth
-      toast.info('For testing: Please sign up as a visitor first, then contact admin to convert to owner account');
+      showToast.info('For testing: Please sign up as a visitor first, then contact admin to convert to owner account');
       window.location.href = '/sign-up';
     } finally {
       setIsLoading(false);

@@ -9,7 +9,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { updateEnquiryStatus } from '@/modules/enquiries/enquiry.actions';
-import { toast } from 'sonner';
+import { showToast } from '@/utils/toast';
 
 interface EnquiryActionsProps {
   enquiryId: string;
@@ -28,9 +28,9 @@ export function EnquiryActions({ enquiryId, currentStatus }: EnquiryActionsProps
         enquiryId,
         status: newStatus as 'NEW' | 'CONTACTED' | 'CLOSED',
       });
-      toast.success('Enquiry status updated');
+      showToast.success('Enquiry status updated');
     } catch (error) {
-      toast.error('Failed to update status');
+      showToast.error('Failed to update status');
       console.error(error);
     } finally {
       setIsUpdating(false);

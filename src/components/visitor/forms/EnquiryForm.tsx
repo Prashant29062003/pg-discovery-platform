@@ -20,7 +20,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Form, FormControl, FormField, FormItem, FormMessage } from "@/components/ui/form";
-import { toast } from "sonner";
+import { showToast } from "@/utils/toast";
 import { cn } from "@/utils";
 
 const formSchema = z.object({
@@ -69,17 +69,17 @@ export default function EnquiryForm({ pgId, className, title = "Priority Enquiry
       const data = await response.json();
       
       if (!response.ok) {
-        toast.error(data.message || "Failed to submit enquiry");
+        showToast.error(data.message || "Failed to submit enquiry");
         return;
       }
-      
+
       setStatus("success");
-      toast.success("Enquiry sent successfully!");
+      showToast.success("Enquiry sent successfully!");
       form.reset();
       if (onSuccess) setTimeout(onSuccess, 2000);
     } catch (error) {
       console.error("Enquiry error:", error);
-      toast.error("Network error. Please try again.");
+      showToast.error("Network error. Please try again.");
     } finally {
       setIsSubmitting(false);
     }

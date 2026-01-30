@@ -3,7 +3,7 @@
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { updateBed, deleteBed } from '@/modules/pg/room.actions';
-import { toast } from 'sonner';
+import { showToast } from '@/utils/toast';
 import { useState } from 'react';
 import { Trash2, CheckCircle2, Circle, Zap } from 'lucide-react';
 import { cn } from '@/utils';
@@ -28,9 +28,9 @@ export function BedListItem({ bed, pgId, roomId }: BedListItemProps) {
     try {
       await updateBed(bed.id, { roomId, isOccupied: !isOccupied });
       setIsOccupied(!isOccupied);
-      toast.success(`Bed marked as ${!isOccupied ? 'occupied' : 'available'}`);
+      showToast.success(`Bed marked as ${!isOccupied ? 'occupied' : 'available'}`);
     } catch (error) {
-      toast.error('Failed to update bed');
+      showToast.error('Failed to update bed');
       console.error(error);
     } finally {
       setIsUpdating(false);
@@ -43,9 +43,9 @@ export function BedListItem({ bed, pgId, roomId }: BedListItemProps) {
     setIsDeleting(true);
     try {
       await deleteBed(bed.id);
-      toast.success('Bed deleted successfully');
+      showToast.success('Bed deleted successfully');
     } catch (error) {
-      toast.error('Failed to delete bed');
+      showToast.error('Failed to delete bed');
       console.error(error);
     } finally {
       setIsDeleting(false);

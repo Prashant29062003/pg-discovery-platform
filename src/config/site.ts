@@ -92,6 +92,8 @@ export const REVIEWS = [
         role: "Software Engineer at Google",
         text: "The best PG experience in Gurugram. The food quality is amazing and the cleaning staff is very regular. Highly recommended!",
         avatar: "https://i.pravatar.cc/150?u=1",
+        socialLink: "https://twitter.com/rahulsharma",
+        socialPlatform: "X",
         categories: ["experience", "food", "cleanliness"],
     },
     {
@@ -99,6 +101,8 @@ export const REVIEWS = [
         role: "Data Analyst at Zomato",
         text: "I've stayed in many PGs, but the sense of community here is unmatched. The high-speed WiFi is perfect for my WFH days.",
         avatar: "https://i.pravatar.cc/150?u=2",
+        socialLink: "https://twitter.com/snehakapoor",
+        socialPlatform: "X",
         categories: ["experience", "community", "amenities"],
     },
     {
@@ -106,6 +110,8 @@ export const REVIEWS = [
         role: "UX Designer",
         text: "Extremely spacious rooms and very secure. The biometric entry gives me peace of mind coming back late from work.",
         avatar: "https://i.pravatar.cc/150?u=3",
+        socialLink: "https://twitter.com/vikrammehra",
+        socialPlatform: "X",
         categories: ["safety", "space", "security"],
     },
     {
@@ -113,6 +119,8 @@ export const REVIEWS = [
         role: "Marketing Specialist",
         text: "The support staff is so responsive. Any issue I raise is fixed within 24 hours. The North Indian food tastes just like home!",
         avatar: "https://i.pravatar.cc/150?u=4",
+        socialLink: "https://twitter.com/ananyaiyer",
+        socialPlatform: "X",
         categories: ["support", "food", "management"],
     },
     {
@@ -120,6 +128,8 @@ export const REVIEWS = [
         role: "Student",
         text: "My stay at The Elite Venue PG was a truly wonderful experience. The owner is extremely kind, supportive, and approachable, making the place feel just like home.",
         avatar: "https://i.pravatar.cc/150?u=5",
+        socialLink: "https://twitter.com/priyampriya",
+        socialPlatform: "X",
         categories: ["experience", "community", "environment"],
     },
 ];

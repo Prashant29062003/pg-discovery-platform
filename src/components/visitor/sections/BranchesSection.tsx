@@ -9,7 +9,7 @@ import { NEIGHBOURHOODS } from "@/config"
 
 export default function BranchesSection() {
   return (
-    <section id="branches" className="py-24 lg:py-32 bg-gradient-to-b from-white to-zinc-50 dark:from-zinc-950 dark:to-zinc-900/50 transition-colors duration-500 overflow-hidden">
+    <section id="branches" className="py-24 lg:py-32 bg-gradient-to-b from-background to-card transition-colors duration-500 overflow-hidden">
       <div className="mx-auto max-w-7xl px-6 lg:px-14">
 
         {/* Header Section */}
@@ -23,16 +23,16 @@ export default function BranchesSection() {
             >
               <Navigation className="h-3.5 w-3.5 fill-current" /> Discover Areas
             </motion.div>
-            <h2 className="text-4xl md:text-6xl font-black tracking-tighter text-zinc-900 dark:text-white leading-[0.9]">
-              Popular <span className="text-orange-600">Neighbourhoods.</span>
+            <h2 className="text-4xl md:text-6xl font-black tracking-tighter text-foreground leading-[0.9]">
+              Popular <span className="text-orange-600 dark:text-orange-500">Neighbourhoods.</span>
             </h2>
-            <p className="text-zinc-500 dark:text-zinc-400 mt-6 text-lg lg:text-xl max-w-xl leading-relaxed">
+            <p className="text-muted-foreground mt-6 text-lg lg:text-xl max-w-xl leading-relaxed">
               Strategically located managed homes near DLF CyberHub, Golf Course Road, and major corporate transit points.
             </p>
           </div>
 
           <motion.div whileHover={{ x: 5 }} transition={{ type: "spring", stiffness: 400 }}>
-            <Link href="/pgs" className="group flex items-center gap-3 text-zinc-900 dark:text-white font-bold text-lg border-b-2 border-orange-600 pb-1 transition-all">
+            <Link href="/pgs" className="group flex items-center gap-3 text-foreground font-bold text-lg border-b-2 border-orange-600 pb-1 transition-all">
               View all locations
               <ArrowUpRight className="h-5 w-5 text-orange-600 transition-transform group-hover:translate-x-1 group-hover:-translate-y-1" />
             </Link>
@@ -60,7 +60,7 @@ export default function BranchesSection() {
                   className="w-full h-full object-cover transition-transform duration-[1.5s] ease-out group-hover:scale-110"
                 />
                 {/* Overlay Gradient */}
-                <div className="absolute inset-0 bg-gradient-to-t from-zinc-950 via-zinc-950/20 to-transparent opacity-60 group-hover:opacity-80 transition-opacity duration-500" />
+                <div className="absolute inset-0 bg-gradient-to-t from-foreground via-foreground/20 to-transparent opacity-60 group-hover:opacity-80 transition-opacity duration-500" />
               </div>
 
               {/* Card Content */}
@@ -75,7 +75,7 @@ export default function BranchesSection() {
                   </h3>
 
                   <div className="flex items-center justify-between opacity-0 group-hover:opacity-100 transition-all duration-500 delay-100">
-                    <div className="px-4 py-2 rounded-xl bg-white/10 backdrop-blur-xl text-white text-[11px] font-black border border-white/20 uppercase tracking-widest">
+                    <div className="px-4 py-2 rounded-xl bg-foreground/10 backdrop-blur-xl text-white text-[11px] font-black border border-white/20 uppercase tracking-widest">
                       {loc.count}
                     </div>
                     <div className="h-12 w-12 rounded-full bg-orange-600 flex items-center justify-center text-white shadow-xl shadow-orange-600/40 ring-4 ring-orange-600/20">

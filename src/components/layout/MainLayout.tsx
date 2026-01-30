@@ -17,7 +17,7 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
             {/* Adjusting the main container padding based on sidebar visibility */}
             <div className={`flex-1 flex flex-col min-w-0`}>
                 <Navbar />
-                <main className={isLanding ? "flex-1 w-full" : "flex-1 w-full max-w-7xl mx-auto px-4 py-8"}>
+                <main className={isLanding ? "flex-1 w-full pt-16" : "flex-1 w-full max-w-7xl mx-auto px-4 pt-16 pb-8"}>
                     {children}
                 </main>
                 <Footer />

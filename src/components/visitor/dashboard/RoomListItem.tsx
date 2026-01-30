@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { Edit2, Trash2, Home, IndianRupee, Layers3 } from 'lucide-react';
 import { deleteRoom } from '@/modules/pg/room.actions';
-import { toast } from 'sonner';
+import { showToast } from '@/utils/toast';
 import { useState } from 'react';
 import { cn } from '@/utils';
 
@@ -44,9 +44,9 @@ export function RoomListItem({ room, pgId }: RoomListItemProps) {
         setIsDeleting(true);
         try {
             await deleteRoom(room.id);
-            toast.success('Room deleted successfully');
+            showToast.success('Room deleted successfully');
         } catch (error) {
-            toast.error('Failed to delete room');
+            showToast.error('Failed to delete room');
             console.error(error);
         } finally {
             setIsDeleting(false);
