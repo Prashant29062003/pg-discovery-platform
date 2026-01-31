@@ -13,6 +13,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 import { useSidebar } from '@/context/SidebarContext';
 import UserMenu from "@/components/visitor/dashboard/UserMenu";
 import { useUser } from '@clerk/nextjs';
+import { Button } from "@/components/ui/button";
 
 /**
  * MENU CONFIGURATIONS
@@ -92,13 +93,13 @@ export function AdminSidebar() {
                         )}
                     </div>
                     {isMobile ? (
-                        <button onClick={() => setIsMobileOpen(false)} className="p-2 text-muted-foreground hover:text-foreground">
+                        <Button onClick={() => setIsMobileOpen(false)} className="p-2 text-muted-foreground hover:text-foreground">
                             <X className="w-5 h-5" />
-                        </button>
+                        </Button>
                     ) : (
-                        <button onClick={() => setIsOpen(!isOpen)} className="hidden md:flex p-1.5 rounded-md hover:bg-accent text-muted-foreground transition-colors">
+                        <Button onClick={() => setIsOpen(!isOpen)} className="hidden md:flex p-1.5 rounded-md hover:bg-accent text-muted-foreground transition-colors">
                             <ChevronLeft className={cn("w-5 h-5 transition-transform duration-300", !isOpen && "rotate-180")} />
-                        </button>
+                        </Button>
                     )}
                 </div>
 
@@ -158,18 +159,24 @@ export function AdminSidebar() {
                 </nav>
 
                 {/* Footer Actions */}
-                <div className="px-3 mt-auto space-y-4 pt-4 border-t border-border">
+                <div className="px-4 mt-auto space-y-3 pt-4 border-t border-border">
                     {!pgId && (
                         <Link href="/admin/pgs/new" onClick={() => isMobile && setIsMobileOpen(false)}>
-                            <button className={cn("w-full flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl text-sm font-bold bg-accent text-foreground hover:bg-accent-hover transition-all shadow-md shadow-accent/10", !showLabel && "aspect-square p-0")}>
+                            <Button className={cn(
+                                "w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl text-sm font-bold bg-orange-600 hover:bg-orange-700 text-white transition-all shadow-lg shadow-orange-600/20 hover:shadow-orange-600/30",
+                                !showLabel && "aspect-square p-0 justify-center"
+                            )}>
                                 <Plus className="w-5 h-5" />
                                 {showLabel && <span>New Property</span>}
-                            </button>
+                            </Button>
                         </Link>
                     )}
 
-                    <div className={cn("flex items-center gap-3 p-1.5 rounded-xl bg-muted border-border", !showLabel && "justify-center")}>
-                        <UserMenu />
+                    <div className={cn(
+                        "flex items-center gap-3 p-2 rounded-xl bg-muted/50 border border-border/50",
+                        !showLabel && "justify-center p-2"
+                    )}>
+                        <UserMenu variant={showLabel ? "default" : "circle"} showLabel={showLabel} />
                     </div>
                 </div>
             </div>

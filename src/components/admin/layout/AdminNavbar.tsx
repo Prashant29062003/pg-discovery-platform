@@ -81,7 +81,7 @@ export function AdminNavbar() {
   }, [pathname]);
 
   return (
-    <nav className="sticky top-0 z-30 w-full bg-card/80 backdrop-blur-md border-b border-border px-4 h-14 sm:h-16 flex items-center justify-between transition-colors">
+    <nav className="sticky top-0 z-30 w-full bg-card/80 backdrop-blur-md border-b border-border px-8 h-14 sm:h-16 flex items-center justify-between transition-colors">
       
       {/* LEFT SIDE - Mobile Menu Toggle & Breadcrumbs */}
       <div className="flex items-center gap-2 md:gap-4 min-w-0 flex-1">
@@ -138,16 +138,17 @@ export function AdminNavbar() {
       </div>
 
       {/* RIGHT SIDE - Essential Actions Only */}
-      <div className="flex items-center gap-1 sm:gap-2 lg:gap-3 shrink-0">
-        {/* Live Site - Fully Responsive */}
+      <div className="flex items-center gap-1 sm:gap-2 lg:gap-3 shrink-0 ">
+        {/* Live Site - Icon on Mobile, Icon+Text on Larger */}
         <Link href="/" target="_blank">
           <Button 
             variant="ghost" 
             size="icon" 
-            className="text-muted-foreground hover:text-orange-600 w-7 h-7 xs:w-8 xs:h-8 sm:w-9 sm:h-9 lg:w-10 lg:h-10"
+            className="text-muted-foreground hover:text-orange-600 w-7 h-7 xs:w-8 xs:h-8 sm:w-9 sm:h-9 lg:w-auto lg:h-10 lg:px-3"
             title="View Live Site"
           >
             <Globe className="w-3.5 h-3.5 xs:w-4 xs:h-4 sm:w-4 sm:h-4" />
+            <span className="hidden lg:inline ml-2">Live Site</span>
           </Button>
         </Link>
 
@@ -163,19 +164,20 @@ export function AdminNavbar() {
           <Moon className="h-3.5 w-3.5 xs:h-4 xs:w-4 sm:h-4 sm:w-4 hidden dark:block" />
         </Button>
 
-        {/* User Menu - Fully Responsive */}
-        <div className="border-l border-border h-7 xs:h-8 sm:h-9 lg:h-10 flex items-center pl-1 xs:pl-2 sm:pl-3 lg:pl-4">
+        {/* User Menu - Responsive Design */}
+        <div className="border-l border-border h-7 xs:h-8 sm:h-9 lg:h-10 flex items-center pl-1 xs:pl-2 sm:pl-3 lg:pl-4 ">
           {!isLoaded ? (
             <div className="w-6 h-6 xs:w-7 xs:h-7 sm:w-8 sm:h-8 lg:w-9 lg:h-9 rounded-full bg-muted animate-pulse" />
           ) : user ? (
             <div className="scale-75 xs:scale-85 sm:scale-90 lg:scale-100">
-              <UserMenu variant="circle" />
+              <UserMenu variant="circle" showLabel={false} />
             </div>
           ) : (
             <div className="scale-75 xs:scale-85 sm:scale-90 lg:scale-100">
               <Link href="/sign-in">
                 <Button size="sm" className="rounded-full bg-orange-600 hover:bg-orange-700 text-white text-xs px-2 xs:px-3 h-6 xs:h-7 sm:h-8 lg:h-9">
-                  Login
+                  <span className="hidden sm:inline">Login</span>
+                  <span className="sm:hidden">👤</span>
                 </Button>
               </Link>
             </div>
