@@ -8,6 +8,7 @@ import { toggleFeaturedPG, deletePG } from '@/modules/pg/pg.actions';
 import { toast } from 'sonner';
 import { useState } from 'react';
 import { cn } from '@/utils';
+import { DeletePGDialog } from '@/components/admin/DeletePGDialog';
 
 interface PGListItemProps {
     pg: {
@@ -23,7 +24,7 @@ interface PGListItemProps {
 
 export function PGListItem({ pg }: PGListItemProps) {
     const [isFeatured, setIsFeatured] = useState(pg.isFeatured);
-    const [isDeleting, setIsDeleting] = useState(false);
+    const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
 
     async function handleToggleFeatured() {
         try {
@@ -36,20 +37,14 @@ export function PGListItem({ pg }: PGListItemProps) {
         }
     }
 
-    async function handleDelete() {
-        if (!confirm('Are you sure you want to delete this PG? This cannot be undone.')) {
-            return;
-        }
-
-        setIsDeleting(true);
+    async function handleDeletePG() {
         try {
             await deletePG(pg.id);
             toast.success('PG deleted successfully');
         } catch (error) {
             toast.error('Failed to delete PG');
             console.error(error);
-        } finally {
-            setIsDeleting(false);
+            throw error; // Re-throw to let dialog handle the error
         }
     }
 
@@ -93,13 +88,20 @@ export function PGListItem({ pg }: PGListItemProps) {
                 <Button
                     variant="destructive"
                     className="flex-1 gap-2"
-                    onClick={handleDelete}
-                    disabled={isDeleting}
+                    onClick={() => setIsDeleteDialogOpen(true)}
                 >
                     <Trash2 className="w-4 h-4" />
                     Delete
                 </Button>
             </div>
+
+            {/* GitHub-style Delete Dialog */}
+            <DeletePGDialog
+                open={isDeleteDialogOpen}
+                onOpenChange={setIsDeleteDialogOpen}
+                pg={pg}
+                onConfirm={handleDeletePG}
+            />
         </Card>
     );
 }

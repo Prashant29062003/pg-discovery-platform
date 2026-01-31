@@ -66,9 +66,6 @@ export default async function PGListingPage({
       const totalBeds = allBeds.length;
       const availableBeds = allBeds.filter(bed => !bed.isOccupied).length;
       
-      console.log(`🔍 Debug - PG: ${pg.name}, Total Beds: ${totalBeds}, Available: ${availableBeds}`);
-      console.log(`🔍 Debug - Rooms: ${pg.rooms.length}, All beds:`, allBeds);
-      
       return {
         ...pg,
         startingPrice: pg.rooms && pg.rooms.length > 0 ? pg.rooms[0].basePrice : 0,

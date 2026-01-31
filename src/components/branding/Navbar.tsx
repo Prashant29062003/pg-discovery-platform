@@ -135,22 +135,15 @@ export default function Navbar({ requireAuth = false }: NavbarProps) {
             <Moon className="absolute h-[1.2rem] w-[1.2rem] rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
           </Button>
 
-          {/* ROLE BASED: Enquiry is ONLY for Visitors/Guests */}
-          {isVisitor && (
-            <Button
-              variant="outline"
-              onClick={() => setIsEnquiryOpen(true)}
-              className="hidden lg:inline-flex items-center gap-2 rounded-full border-zinc-200 dark:border-zinc-800 font-medium"
-            >
-              <MessageSquare className="h-4 w-4 text-orange-500" />
-              <span className="dark:text-white">Enquire</span>
-            </Button>
-          )}
-
           <Link href="/pgs" className="hidden lg:inline-flex">
             <Button className="bg-orange-600 hover:bg-orange-700 text-white rounded-full px-6 font-semibold shadow-md shadow-orange-500/20 transition-all active:scale-95">
               Explore PGs
             </Button>
+          </Link>
+
+          <Link href="/enquiry" className="hidden lg:inline-flex items-center gap-2 rounded-full border-slate-200 dark:border-slate-800 font-medium">
+            <MessageSquare className="h-4 w-4 text-orange-500" />
+            <span className="dark:text-white">Quick Enquiry</span>
           </Link>
 
           {/* User Auth Section */}

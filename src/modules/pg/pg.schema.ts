@@ -37,6 +37,8 @@ export const createPGSchema = z.object({
   rulesAndRegulations: z.string().optional(),
   lat: z.coerce.number().optional(),
   lng: z.coerce.number().optional(),
+  isPublished: z.boolean().default(false),
+  isFeatured: z.boolean().default(false),
 });
 
 /**

@@ -5,7 +5,7 @@ import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { MapPin, ExternalLink } from 'lucide-react';
+import { MapPin, ExternalLink, CheckCircle2 } from 'lucide-react';
 import { Textarea } from '@/components/ui/textarea';
 import { handleGoogleMapsLink, handleCurrentLocation } from '../utils/locationHandlers';
 
@@ -78,7 +78,8 @@ export function LocationSection({
               </Button>
             </div>
             <p className="text-xs text-zinc-500 dark:text-zinc-400">
-              💡 Right-click on location in Google Maps → "What's here?" → Copy the link
+              💡 Right-click on location in Google Maps → "What's here?" → Copy the link<br/>
+              📍 This will auto-fill: Street Address, City, Locality/Area, and Coordinates
             </p>
           </div>
 
@@ -98,7 +99,7 @@ export function LocationSection({
               {locationLoading ? 'Detecting...' : '📍 Use My Current Location'}
             </Button>
             <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-2">
-              Share your device location to auto-fill coordinates and address
+              📍 Share your device location to auto-fill: Street Address, City, Locality/Area, and Coordinates
             </p>
           </div>
         </CardContent>
@@ -115,17 +116,29 @@ export function LocationSection({
           <div>
             <label className="block text-sm font-medium text-zinc-900 dark:text-zinc-100 mb-1">
               Street Address *
+              {address && (
+                <span className="ml-2 text-xs bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400 px-2 py-1 rounded-full flex items-center gap-1 inline-flex">
+                  <CheckCircle2 className="w-3 h-3" />
+                  Auto-filled
+                </span>
+              )}
             </label>
             <Input
               value={address}
               onChange={(e) => onUpdate('address', e.target.value)}
               placeholder="e.g., 123 Main Street"
               className={`bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 border-zinc-200 dark:border-zinc-700 ${
-                errors.address ? 'border-red-500 dark:border-red-500' : ''
+                errors.address ? 'border-red-500 dark:border-red-500' : address ? 'border-green-300 dark:border-green-700' : ''
               }`}
             />
             {errors.address && (
               <p className="text-red-500 dark:text-red-400 text-sm mt-1">{errors.address}</p>
+            )}
+            {address && !errors.address && (
+              <p className="text-xs text-green-600 dark:text-green-400 mt-1 flex items-center gap-1">
+                <CheckCircle2 className="w-3 h-3" />
+                Extracted from Google Maps
+              </p>
             )}
           </div>
 
@@ -148,34 +161,58 @@ export function LocationSection({
             <div>
               <label className="block text-sm font-medium text-zinc-900 dark:text-zinc-100 mb-1">
                 City *
+                {city && (
+                  <span className="ml-2 text-xs bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400 px-2 py-1 rounded-full flex items-center gap-1 inline-flex">
+                    <CheckCircle2 className="w-3 h-3" />
+                    Auto-filled
+                  </span>
+                )}
               </label>
               <Input
                 value={city}
                 onChange={(e) => onUpdate('city', e.target.value)}
                 placeholder="e.g., Bangalore"
                 className={`bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 border-zinc-200 dark:border-zinc-700 ${
-                  errors.city ? 'border-red-500 dark:border-red-500' : ''
+                  errors.city ? 'border-red-500 dark:border-red-500' : city ? 'border-green-300 dark:border-green-700' : ''
                 }`}
               />
               {errors.city && (
                 <p className="text-red-500 dark:text-red-400 text-sm mt-1">{errors.city}</p>
+              )}
+              {city && !errors.city && (
+                <p className="text-xs text-green-600 dark:text-green-400 mt-1 flex items-center gap-1">
+                  <CheckCircle2 className="w-3 h-3" />
+                  Extracted from Google Maps
+                </p>
               )}
             </div>
 
             <div>
               <label className="block text-sm font-medium text-zinc-900 dark:text-zinc-100 mb-1">
                 Locality/Area *
+                {locality && (
+                  <span className="ml-2 text-xs bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400 px-2 py-1 rounded-full flex items-center gap-1 inline-flex">
+                    <CheckCircle2 className="w-3 h-3" />
+                    Auto-filled
+                  </span>
+                )}
               </label>
               <Input
                 value={locality}
                 onChange={(e) => onUpdate('locality', e.target.value)}
                 placeholder="e.g., Indiranagar"
                 className={`bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 border-zinc-200 dark:border-zinc-700 ${
-                  errors.locality ? 'border-red-500 dark:border-red-500' : ''
+                  errors.locality ? 'border-red-500 dark:border-red-500' : locality ? 'border-green-300 dark:border-green-700' : ''
                 }`}
               />
               {errors.locality && (
                 <p className="text-red-500 dark:text-red-400 text-sm mt-1">{errors.locality}</p>
+              )}
+              {locality && !errors.locality && (
+                <p className="text-xs text-green-600 dark:text-green-400 mt-1 flex items-center gap-1">
+                  <CheckCircle2 className="w-3 h-3" />
+                  Extracted from Google Maps
+                </p>
               )}
             </div>
           </div>

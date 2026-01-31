@@ -165,12 +165,12 @@ export function AdminNavbar() {
         </Button>
 
         {/* User Menu - Responsive Design */}
-        <div className="border-l border-border h-7 xs:h-8 sm:h-9 lg:h-10 flex items-center pl-1 xs:pl-2 sm:pl-3 lg:pl-4 ">
+        <div className="border-l border-border h-7 xs:h-8 sm:h-9 lg:h-10 flex items-center pl-1 xs:pl-2 sm:pl-3 lg:pl-4">
           {!isLoaded ? (
             <div className="w-6 h-6 xs:w-7 xs:h-7 sm:w-8 sm:h-8 lg:w-9 lg:h-9 rounded-full bg-muted animate-pulse" />
           ) : user ? (
             <div className="scale-75 xs:scale-85 sm:scale-90 lg:scale-100">
-              <UserMenu variant="circle" showLabel={false} />
+              <UserMenu variant="default" showLabel={true} />
             </div>
           ) : (
             <div className="scale-75 xs:scale-85 sm:scale-90 lg:scale-100">

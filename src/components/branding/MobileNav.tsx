@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { createPortal } from "react-dom"; // Add this
 import Link from "next/link";
 import NextImage from "next/image";
-import { Menu, X, Phone, LogOut, LayoutDashboard, Home, Search, Image as ImageIcon, Info, Building2, Clock } from "lucide-react";
+import { Menu, X, Phone, LogOut, LayoutDashboard, Home, Search, Image as ImageIcon, Info, Building2, Clock, MessageSquare } from "lucide-react";
 import { useUser, useClerk } from "@clerk/nextjs";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
@@ -126,6 +126,7 @@ export default function MobileNav() {
                     <MobileLink href="/pgs" icon={<Search className="w-6 h-6" />} onClick={() => setIsOpen(false)}>Explore PGs</MobileLink>
                     <MobileLink href="/life" icon={<ImageIcon className="w-6 h-6" />} onClick={() => setIsOpen(false)}>Community Gallery</MobileLink>
                     <MobileLink href="/about" icon={<Info className="w-6 h-6" />} onClick={() => setIsOpen(false)}>About Us</MobileLink>
+                    <MobileLink href="/enquiry" icon={<MessageSquare className="w-6 h-6" />} onClick={() => setIsOpen(false)}>Quick Enquiry</MobileLink>
                   </>
                 )}
 

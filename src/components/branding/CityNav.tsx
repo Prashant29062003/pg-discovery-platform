@@ -28,16 +28,16 @@ const ListItem = ({ className, title, children, icon, href, ...props }: any) => 
           <div className="text-sm font-bold text-zinc-900 dark:text-zinc-100 leading-none group-hover:text-orange-600 transition-colors">
             {title}
           </div>
-          <p className="line-clamp-2 text-xs leading-snug text-zinc-500 dark:text-zinc-400 mt-1">
+          <div className="line-clamp-2 text-xs leading-snug text-zinc-500 dark:text-zinc-400 mt-1">
             {children}
-          </p>
+          </div>
         </div>
       </Link>
     </NavigationMenuLink>
   );
 };
 
-// Define city configurations
+// Define city configurations with default fallback for new cities
 const cityConfigs = {
   'Gurugram': {
     icon: <Map className="w-4 h-4 text-orange-500" />,
@@ -53,8 +53,26 @@ const cityConfigs = {
   }
 };
 
+// Get city configuration with fallback for new cities
+function getCityConfig(city: string) {
+  // Return predefined config if exists
+  if (cityConfigs[city as keyof typeof cityConfigs]) {
+    return cityConfigs[city as keyof typeof cityConfigs];
+  }
+  
+  // Generate dynamic config for new cities
+  const IconComponent = Map; // Default to Map icon for new cities
+  const colors = ['text-green-500', 'text-red-500', 'text-yellow-500', 'text-indigo-500', 'text-pink-500'];
+  const randomColor = colors[Math.floor(Math.random() * colors.length)];
+  
+  return {
+    icon: <IconComponent className={`w-4 h-4 ${randomColor}`} />,
+    description: `Discover premium PG stays in ${city}.`
+  };
+}
+
 export function CityNav() {
-  const [availableCities, setAvailableCities] = useState<string[]>([]);
+  const [availableCities, setAvailableCities] = useState<{ city: string; isFeatured: boolean }[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -75,11 +93,13 @@ export function CityNav() {
     fetchCities();
   }, []);
 
-  // Cities that exist in database
-  const activeCities = availableCities.filter(city => cityConfigs[city as keyof typeof cityConfigs]);
+  // Separate featured and regular cities
+  const featuredCities = availableCities.filter(item => item.isFeatured);
+  const regularCities = availableCities.filter(item => !item.isFeatured);
+  const allCityNames = availableCities.map(item => item.city);
   
-  // Cities that don't exist yet but we want to show as coming soon
-  const comingSoonCities = Object.keys(cityConfigs).filter(city => !availableCities.includes(city));
+  // Cities that are predefined but don't exist yet (for "coming soon" display)
+  const comingSoonCities = Object.keys(cityConfigs).filter(city => !allCityNames.includes(city));
 
   if (loading) {
     return (
@@ -107,32 +127,84 @@ export function CityNav() {
         Find a Stay
       </NavigationMenuTrigger>
       <NavigationMenuContent>
-        <div className="grid w-[550px] grid-cols-2 p-4 bg-white dark:bg-zinc-950">
-          {activeCities.length > 0 && (
-            <div className="col-span-1 border-r border-zinc-100 dark:border-zinc-800 pr-4">
-              <p className="text-[10px] font-bold uppercase tracking-widest text-zinc-400 mb-3 px-3">Active Cities</p>
-              {activeCities.map((city) => {
-                const config = cityConfigs[city as keyof typeof cityConfigs];
-                return (
-                  <ListItem 
-                    key={city}
-                    title={city} 
-                    href={`/pgs?city=${city.toLowerCase()}`} 
-                    icon={config?.icon}
-                  >
-                    {config?.description}
-                  </ListItem>
-                );
-              })}
+        <div className={cn(
+          "p-4 bg-white dark:bg-zinc-950",
+          availableCities.length > 6 ? "grid-cols-3 w-[800px]" : availableCities.length > 3 ? "grid-cols-2 w-[550px]" : "grid-cols-1 w-[400px]"
+        )}>
+          {/* Featured Cities Section */}
+          {featuredCities.length > 0 && (
+            <div className={cn(
+              "col-span-1 mb-4",
+              regularCities.length > 0 && "border-b border-zinc-100 dark:border-zinc-800 pb-4"
+            )}>
+              <div className="flex items-center gap-2 mb-3 px-3">
+                <Star className="w-3 h-3 text-yellow-500" />
+                <p className="text-[10px] font-bold uppercase tracking-widest text-zinc-400">Featured Cities</p>
+              </div>
+              <div className="space-y-2">
+                {featuredCities.map((cityItem) => {
+                  const config = getCityConfig(cityItem.city);
+                  return (
+                    <ListItem 
+                      key={cityItem.city}
+                      title={cityItem.city} 
+                      href={`/pgs?city=${cityItem.city.toLowerCase()}`} 
+                      icon={config?.icon}
+                      className="border border-yellow-200 dark:border-yellow-800 bg-yellow-50 dark:bg-yellow-950/20 hover:bg-yellow-100 dark:hover:bg-yellow-900/30"
+                    >
+                      <div className="flex items-center gap-1">
+                        <Star className="w-3 h-3 text-yellow-500" />
+                        <span>{config?.description}</span>
+                      </div>
+                    </ListItem>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
+          {/* Regular Cities Section */}
+          {regularCities.length > 0 && (
+            <div className={cn(
+              featuredCities.length > 0 && regularCities.length > 3 ? "col-span-2" : 
+              featuredCities.length > 0 ? "col-span-1" : 
+              regularCities.length > 3 ? "col-span-2" : "col-span-1",
+              comingSoonCities.length > 0 && regularCities.length > 3 ? "border-r border-zinc-100 dark:border-zinc-800 pr-4" : ""
+            )}>
+              <p className="text-[10px] font-bold uppercase tracking-widest text-zinc-400 mb-3 px-3">
+                {featuredCities.length > 0 ? 'Available Cities' : 'Available Cities'}
+              </p>
+              <div className={cn(
+                "grid gap-2",
+                regularCities.length > 6 ? "grid-cols-2" : "grid-cols-1"
+              )}>
+                {regularCities.map((cityItem) => {
+                  const config = getCityConfig(cityItem.city);
+                  return (
+                    <ListItem 
+                      key={cityItem.city}
+                      title={cityItem.city} 
+                      href={`/pgs?city=${cityItem.city.toLowerCase()}`} 
+                      icon={config?.icon}
+                    >
+                      {config?.description}
+                    </ListItem>
+                  );
+                })}
+              </div>
             </div>
           )}
           
+          {/* Coming Soon Cities */}
           {comingSoonCities.length > 0 && (
-            <div className={`col-span-1 ${activeCities.length > 0 ? 'pl-4' : ''}`}>
+            <div className={cn(
+              "col-span-1",
+              (featuredCities.length > 0 || regularCities.length > 3) ? "pl-4" : ""
+            )}>
               <p className="text-[10px] font-bold uppercase tracking-widest text-zinc-400 mb-3 px-3">
-                {activeCities.length > 0 ? 'Expanding Soon' : 'Coming Soon'}
+                {(featuredCities.length > 0 || regularCities.length > 0) ? 'Expanding Soon' : 'Coming Soon'}
               </p>
-              {comingSoonCities.map((city) => {
+              {comingSoonCities.map((city: string) => {
                 const config = cityConfigs[city as keyof typeof cityConfigs];
                 return (
                   <ListItem 

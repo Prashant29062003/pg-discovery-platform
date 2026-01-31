@@ -5,10 +5,9 @@ import { ZodError } from 'zod';
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const result = await createPGInternal(body);
+    const result = await createPGInternal(body); 
     return NextResponse.json({ success: true, pgId: result.pgId, slug: result.slug });
   } catch (err: any) {
-    console.error('[API][POST] /api/admin/pgs error', err);
 
     // If validation error from zod, return structured validation object
     if (err instanceof ZodError) {

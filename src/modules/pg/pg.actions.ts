@@ -78,7 +78,8 @@ export async function createPGInternal(data: CreatePGInput) {
       rulesAndRegulations: validated.rulesAndRegulations,
       lat: validated.lat,
       lng: validated.lng,
-      isFeatured: false,
+      isPublished: validated.isPublished || false,
+      isFeatured: validated.isFeatured || false,
       // TODO: Add ownerId: userId once database column is available
     })
     .execute();
@@ -116,7 +117,7 @@ export async function updatePGInternal(pgId: string, data: UpdatePGInput) {
     'gender', 'address', 'city', 'locality', 
     'managerName', 'phoneNumber', 'lat', 'lng',
     'checkInTime', 'checkOutTime', 'minStayDays',
-    'cancellationPolicy', 'rulesAndRegulations', 'isFeatured'
+    'cancellationPolicy', 'rulesAndRegulations', 'isPublished', 'isFeatured'
   ];
 
   for (const field of validFields) {
@@ -209,14 +210,11 @@ export async function getPGWithRooms(pgId: string) {
   const { userId } = await auth();
   if (!userId) throw new Error('Unauthorized');
 
-  console.log('[getPGWithRooms] Fetching PG with ID:', pgId);
   
   const pgData = await db.select().from(pgs).where(eq(pgs.id, pgId)).execute();
 
-  console.log('[getPGWithRooms] Found PGs:', pgData.length);
   
   if (pgData.length === 0) {
-    console.log('[getPGWithRooms] No PG found with ID:', pgId);
     throw new Error(`PG not found: ${pgId}`);
   }
 

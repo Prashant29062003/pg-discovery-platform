@@ -1,11 +1,11 @@
 /**
  * Location handlers for geolocation and maps integration
  */
-import { toast } from 'sonner';
-import { extractCoordinatesFromMapsUrl, reverseGeocode } from './location';
+import { showToast } from '@/utils/toast';
+import { extractCoordinatesFromMapsUrl, reverseGeocode, LocationDetails } from './location';
 
 export interface LocationUpdateCallback {
-  (key: 'lat' | 'lng' | 'address', value: string): void;
+  (key: 'lat' | 'lng' | 'address' | 'city' | 'locality' | 'fullAddress', value: string): void;
 }
 
 /**
@@ -17,7 +17,7 @@ export async function handleGoogleMapsLink(
   onLoadingChange: (loading: boolean) => void
 ): Promise<void> {
   if (!mapsLink.trim()) {
-    toast.error('🗺️ Please paste a valid Google Maps link');
+    showToast.error('🗺️ Please paste a valid Google Maps link', 'The link field cannot be empty');
     return;
   }
 
@@ -25,7 +25,7 @@ export async function handleGoogleMapsLink(
   try {
     const coords = extractCoordinatesFromMapsUrl(mapsLink);
     if (!coords) {
-      toast.error('🗺️ Could not extract coordinates. Please ensure the link contains location data (e.g., https://maps.google.com/?q=latitude,longitude)');
+      showToast.error('🗺️ Could not extract coordinates', 'Please ensure the link contains location data (e.g., https://maps.google.com/?q=latitude,longitude)');
       return;
     }
 
@@ -33,21 +33,35 @@ export async function handleGoogleMapsLink(
     onUpdate('lng', coords.lng.toString());
 
     try {
-      const address = await reverseGeocode(coords.lat, coords.lng);
-      if (address) {
-        onUpdate('address', address);
-        toast.success('✅ Location extracted successfully!');
+      const locationDetails: LocationDetails | null = await reverseGeocode(coords.lat, coords.lng);
+      if (locationDetails) {
+        // Update all location fields
+        if (locationDetails.address) onUpdate('address', locationDetails.address);
+        if (locationDetails.city) onUpdate('city', locationDetails.city);
+        if (locationDetails.locality) onUpdate('locality', locationDetails.locality);
+        if (locationDetails.fullAddress) onUpdate('fullAddress', locationDetails.fullAddress);
+        
+        const extractedFields = [];
+        if (locationDetails.address) extractedFields.push('Street Address');
+        if (locationDetails.city) extractedFields.push('City');
+        if (locationDetails.locality) extractedFields.push('Locality/Area');
+        if (locationDetails.fullAddress) extractedFields.push('Full Address');
+        
+        showToast.success(
+          '✅ Location extracted successfully!', 
+          `Auto-filled: ${extractedFields.join(', ')} and Coordinates`
+        );
       } else {
-        toast.success('✅ Coordinates extracted! Please fill the address field manually.');
+        showToast.success('✅ Coordinates extracted!', 'Please fill the address fields manually');
       }
     } catch (geoErr) {
       console.error('Reverse geocode error:', geoErr);
       // Still show success even if reverse geocoding fails
-      toast.success('✅ Coordinates extracted! Please fill the address field manually.');
+      showToast.success('✅ Coordinates extracted!', 'Please fill the address fields manually');
     }
   } catch (err: any) {
     console.error('Error processing maps link:', err);
-    toast.error('🗺️ Failed to process the maps link. Please check the URL and try again.');
+    showToast.error('🗺️ Failed to process the maps link', 'Please check the URL and try again');
   } finally {
     onLoadingChange(false);
   }
@@ -62,7 +76,7 @@ export async function handleCurrentLocation(
 ): Promise<void> {
   // Check if geolocation is available
   if (!navigator?.geolocation) {
-    toast.error('Geolocation is not supported in your browser');
+    showToast.error('📍 Geolocation not supported', 'Geolocation is not supported in your browser');
     return;
   }
 
@@ -79,28 +93,42 @@ export async function handleCurrentLocation(
     onUpdate('lat', position.latitude.toString());
     onUpdate('lng', position.longitude.toString());
 
-    const address = await reverseGeocode(position.latitude, position.longitude);
-    if (address) {
-      onUpdate('address', address);
-      toast.success('Current location detected successfully!');
+    const locationDetails: LocationDetails | null = await reverseGeocode(position.latitude, position.longitude);
+    if (locationDetails) {
+      // Update all location fields
+      if (locationDetails.address) onUpdate('address', locationDetails.address);
+      if (locationDetails.city) onUpdate('city', locationDetails.city);
+      if (locationDetails.locality) onUpdate('locality', locationDetails.locality);
+      if (locationDetails.fullAddress) onUpdate('fullAddress', locationDetails.fullAddress);
+      
+      const extractedFields = [];
+      if (locationDetails.address) extractedFields.push('Street Address');
+      if (locationDetails.city) extractedFields.push('City');
+      if (locationDetails.locality) extractedFields.push('Locality/Area');
+      if (locationDetails.fullAddress) extractedFields.push('Full Address');
+      
+      showToast.success(
+        '✅ Current location detected!', 
+        `Auto-filled: ${extractedFields.join(', ')} and Coordinates`
+      );
     } else {
       onUpdate('address', `${position.latitude.toFixed(4)}, ${position.longitude.toFixed(4)}`);
-      toast.success('Location detected! Please refine the address.');
+      showToast.success('✅ Location detected!', 'Please refine the address fields manually');
     }
   } catch (err: any) {
     console.error('Geolocation error:', err);
     
     // Handle different error types
     if (err?.code === 1) {
-      toast.error('📍 Permission denied. Please enable location access in your browser settings.');
+      showToast.error('📍 Permission denied', 'Please enable location access in your browser settings');
     } else if (err?.code === 2) {
-      toast.error('📍 Unable to retrieve your location. Please check your connection and try again.');
+      showToast.error('📍 Location unavailable', 'Please check your connection and try again');
     } else if (err?.code === 3) {
-      toast.error('📍 Location request timed out. Please try again.');
+      showToast.error('📍 Location request timed out', 'Please try again');
     } else if (err?.message) {
-      toast.error(`📍 Location error: ${err.message}`);
+      showToast.error('📍 Location error', err.message);
     } else {
-      toast.error('📍 Failed to detect current location. Please enter your address manually.');
+      showToast.error('📍 Location detection failed', 'Please enter your address manually');
     }
   } finally {
     onLoadingChange(false);

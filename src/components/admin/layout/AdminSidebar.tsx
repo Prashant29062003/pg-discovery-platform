@@ -4,9 +4,9 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
-  Home, LayoutDashboard, Settings, ChevronLeft, Store, Plus, X,
-  MessageSquare, Camera, Users, ShieldCheck, Wallet, Heart,
-  DoorOpen, ArrowLeft, Layers
+  LayoutDashboard, Home, Store, Wallet, Settings, ShieldCheck, Camera, 
+  Bed, Users, FileText, MessageSquare, ChevronLeft, ChevronRight, Menu, X, Edit, Archive,
+  DoorOpen, ArrowLeft, Plus
 } from "lucide-react";
 import { cn } from "@/utils";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
@@ -24,6 +24,7 @@ const GLOBAL_GROUPS = [
     items: [
       { icon: LayoutDashboard, label: "Overview", href: "/admin" },
       { icon: Home, label: "All Properties", href: "/admin/pgs" },
+      { icon: Archive, label: "Drafts", href: "/admin/pgs/drafts" },
       { icon: Store, label: "Live Store Front", href: "/pgs" },
     ]
   },

@@ -26,8 +26,13 @@ export const pgs = pgTable("pgs", {
   isFeatured: boolean("is_featured").default(false).notNull(),
   isPublished: boolean("is_published").default(false).notNull(), // Draft mode
   gender: genderEnum("gender").default('UNISEX').notNull(),
-  managerName: text("manager_name"),
+  managerName: text("manager_name").notNull(),
   phoneNumber: varchar("phone_number", { length: 15 }),
+  whatsappNumber: varchar("whatsapp_number", { length: 15 }),
+  email: varchar("email", { length: 255 }),
+  website: varchar("website", { length: 500 }),
+  facebook: varchar("facebook", { length: 500 }),
+  instagram: varchar("instagram", { length: 500 }),
   address: text("address").notNull(),
   city: text("city").notNull(),
   locality: text("locality").notNull(),
@@ -178,6 +183,20 @@ export const insertEnquirySchema = createInsertSchema(enquiries, {
   // Ensure ID is generated if not provided (though Drizzle usually handles this)
   id: z.string().optional(),
 });
+
+// 6. PG Drafts Table
+export const pgDrafts = pgTable("pg_drafts", {
+  id: text("id").primaryKey(),
+  pgId: text("pg_id").references(() => pgs.id, { onDelete: 'cascade' }),
+  userId: text("user_id").notNull(),
+  title: text("title").notNull(),
+  data: jsonb("data").notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+}, (table) => ({
+  userIdIdx: index("user_id_idx").on(table.userId),
+  pgIdIdx: index("pg_id_idx").on(table.pgId),
+}));
 
 // Schema for reading data (useful for API responses)
 export const selectEnquirySchema = createSelectSchema(enquiries);

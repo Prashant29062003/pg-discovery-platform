@@ -118,10 +118,11 @@ export async function POST(req: NextRequest) {
     }
 
     // Handle Duplicate/Spam errors
-    if (error.message?.includes("duplicate") || error.message?.includes("recent")) {
+    if (error.message?.includes("duplicate") || error.message?.includes("recent") || error.message?.includes("already submitted")) {
       return NextResponse.json(
         { 
           success: false, 
+          error: error.message,
           message: "You already submitted an enquiry for this PG recently. Please wait 24 hours before submitting again.",
           code: "DUPLICATE_ENQUIRY"
         },
