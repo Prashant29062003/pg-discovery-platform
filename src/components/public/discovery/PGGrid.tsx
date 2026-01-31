@@ -14,6 +14,8 @@ type PG = {
     thumbnailImage?: string | null;
     amenities?: string[];
     startingPrice?: number;
+    totalBeds?: number;
+    availableBeds?: number;
 };
 
 export default function PGGrid({ pgs }: { pgs: PG[] }) {
@@ -45,6 +47,8 @@ export default function PGGrid({ pgs }: { pgs: PG[] }) {
                         thumbnailImage={pg.thumbnailImage}
                         amenities={pg.amenities}
                         startingPrice={pg.startingPrice}
+                        totalBeds={pg.totalBeds}
+                        availableBeds={pg.availableBeds}
                     />
                 </motion.div>
             ))}

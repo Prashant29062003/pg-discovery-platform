@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { PGImageThumbnail } from "@/components/common/PGImageGallery";
-import { MapPin, Wifi, DoorOpen } from "lucide-react";
+import { MapPin, Wifi, DoorOpen, Bed } from "lucide-react";
 
 type PGCardProps = {
   slug: string;
@@ -12,6 +12,8 @@ type PGCardProps = {
   thumbnailImage?: string | null;
   amenities?: string[];
   startingPrice?: number;
+  totalBeds?: number;
+  availableBeds?: number;
 };
 
 export default function PGCard({
@@ -24,6 +26,8 @@ export default function PGCard({
   thumbnailImage,
   amenities = [],
   startingPrice,
+  totalBeds,
+  availableBeds,
 }: PGCardProps) {
   // Get the thumbnail image - prefer thumbnailImage, then first image, then use fallback
   const displayImage = thumbnailImage || (images && images.length > 0 ? images[0] : null);
@@ -70,9 +74,18 @@ export default function PGCard({
         </div>
 
         {/* Quick Info */}
-        {amenities && amenities.length > 0 && (
-          <div className="flex flex-wrap gap-2 pt-1">
-            {amenities.slice(0, 2).map((amenity, idx) => (
+        <div className="flex flex-wrap gap-2 pt-1">
+          {/* Bed Availability */}
+          {totalBeds !== undefined && availableBeds !== undefined && (
+            <span className="inline-flex items-center gap-1 text-xs font-medium text-zinc-700 dark:text-zinc-300 bg-zinc-100 dark:bg-zinc-800 px-2 py-1 rounded-lg">
+              <Bed className="w-3 h-3" />
+              {availableBeds}/{totalBeds} beds
+            </span>
+          )}
+          
+          {/* Amenities */}
+          {amenities && amenities.length > 0 && (
+            amenities.slice(0, totalBeds !== undefined ? 1 : 2).map((amenity, idx) => (
               <span
                 key={idx}
                 className="inline-flex items-center gap-1 text-xs font-medium text-zinc-700 dark:text-zinc-300 bg-zinc-100 dark:bg-zinc-800 px-2 py-1 rounded-lg"
@@ -89,14 +102,16 @@ export default function PGCard({
                   amenity
                 )}
               </span>
-            ))}
-            {amenities.length > 2 && (
-              <span className="text-xs text-zinc-500 dark:text-zinc-400">
-                +{amenities.length - 2} more
-              </span>
-            )}
-          </div>
-        )}
+            ))
+          )}
+          
+          {/* More amenities indicator */}
+          {amenities && amenities.length > (totalBeds !== undefined ? 1 : 2) && (
+            <span className="text-xs text-zinc-500 dark:text-zinc-400">
+              +{amenities.length - (totalBeds !== undefined ? 1 : 2)} more
+            </span>
+          )}
+        </div>
 
         {/* Price */}
         {startingPrice && (

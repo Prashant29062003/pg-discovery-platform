@@ -9,7 +9,7 @@ import { ImageWithFallback } from "@/components/common/utils/ImageWithFallback";
 
 export default function HeroSection() {
   return (
-    <section className="relative w-full min-h-[90vh] flex items-center overflow-hidden bg-background pt-4 lg:pt-0">
+    <section className="relative w-full min-h-[90vh] flex items-center overflow-hidden bg-background">
       <div className="container mx-auto px-6 lg:px-14 py-10 lg:py-20 lg:grid lg:lg:grid-cols-2 flex flex-col-reverse gap-12 items-center">
         
         {/* Left Content: Text & Actions */}

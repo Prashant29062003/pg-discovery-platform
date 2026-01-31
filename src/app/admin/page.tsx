@@ -1,17 +1,18 @@
 import { auth } from '@clerk/nextjs/server';
 import { db } from '@/db';
-import { pgs, enquiries } from '@/db/schema';
-import { count, eq, gte, desc } from 'drizzle-orm';
+import { pgs, enquiries, rooms, beds } from '@/db/schema';
+import { count, eq, gte, desc, sum } from 'drizzle-orm';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { 
   ArrowRight, Plus, Home, Inbox, 
   BarChart3, Edit, LayoutDashboard, 
-  ArrowUpRight, Clock, CheckCircle2 
+  ArrowUpRight, Clock, CheckCircle2, Bed, MapPin, Star, Image
 } from 'lucide-react';
 import { requireOwnerAccess } from '@/lib/auth';
 import { Separator } from '@/components/ui/separator';
+import { PGImageThumbnail } from '@/components/common/PGImageGallery';
 
 export default async function DashboardPage() {
   await requireOwnerAccess();
@@ -24,13 +25,34 @@ export default async function DashboardPage() {
     db.select({ count: count() }).from(pgs).execute(),
     db.select({ count: count() }).from(enquiries).where(gte(enquiries.createdAt, sevenDaysAgo)).execute(),
     db.select({ count: count() }).from(enquiries).where(eq(enquiries.status, 'NEW')).execute(),
-    db.select({
-      id: pgs.id,
-      name: pgs.name,
-      city: pgs.city,
-      locality: pgs.locality,
-      isFeatured: pgs.isFeatured,
-    }).from(pgs).orderBy(desc(pgs.createdAt)).limit(4).execute(),
+    db.query.pgs.findMany({
+      columns: {
+        id: true,
+        name: true,
+        city: true,
+        locality: true,
+        isFeatured: true,
+        thumbnailImage: true,
+        images: true,
+      },
+      with: {
+        rooms: {
+          with: {
+            beds: {
+              columns: {
+                isOccupied: true,
+              },
+            },
+          },
+          columns: {
+            basePrice: true,
+            isAvailable: true,
+          },
+        },
+      },
+      orderBy: [desc(pgs.createdAt)],
+      limit: 4,
+    }),
   ]);
 
   const pgCount = pgCountResult[0]?.count || 0;
@@ -99,20 +121,86 @@ export default async function DashboardPage() {
                     </Link>
                 </div>
                 <div className="p-6 grid gap-4 sm:grid-cols-2">
-                    {recentPGsList.map((pg) => (
-                        <div key={pg.id} className="group relative p-4 rounded-xl border border-border bg-card hover:border-orange-200 dark:hover:border-orange-800 transition-colors">
-                            <h3 className="font-bold text-foreground">{pg.name}</h3>
-                            <p className="text-sm text-muted-foreground mb-4">{pg.city}, {pg.locality}</p>
-                            <div className="flex gap-2">
-                                <Link href={`/admin/pgs/${pg.id}/edit`} className="flex-1">
-                                    <Button variant="outline" size="sm" className="w-full text-xs">Edit</Button>
-                                </Link>
-                                <Link href={`/admin/pgs/${pg.id}/preview`} className="flex-1">
-                                    <Button variant="secondary" size="sm" className="w-full text-xs">Preview</Button>
-                                </Link>
+                    {recentPGsList.map((pg) => {
+                        // Calculate statistics
+                        const allBeds = pg.rooms.flatMap(room => room.beds);
+                        const totalBeds = allBeds.length;
+                        const availableBeds = allBeds.filter(bed => !bed.isOccupied).length;
+                        const startingPrice = pg.rooms.length > 0 ? Math.min(...pg.rooms.map(room => room.basePrice)) : 0;
+                        const displayImage = pg.thumbnailImage || (pg.images && pg.images.length > 0 ? pg.images[0] : null);
+
+                        return (
+                            <div key={pg.id} className="group relative overflow-hidden rounded-xl border border-border bg-card hover:border-orange-200 dark:hover:border-orange-800 transition-all hover:shadow-lg">
+                                {/* Image Section */}
+                                <div className="relative h-32 overflow-hidden bg-zinc-100 dark:bg-zinc-800">
+                                    <PGImageThumbnail
+                                        src={displayImage}
+                                        alt={pg.name}
+                                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                                    />
+                                    
+                                    {/* Featured Badge */}
+                                    {pg.isFeatured && (
+                                        <div className="absolute top-2 right-2 inline-flex items-center gap-1 rounded-full bg-gradient-to-r from-orange-500 to-orange-600 px-2 py-1 text-xs font-semibold text-white shadow-lg">
+                                            <Star className="w-3 h-3" />
+                                            Featured
+                                        </div>
+                                    )}
+                                    
+                                    {/* Image Count */}
+                                    {pg.images && pg.images.length > 1 && (
+                                        <div className="absolute top-2 left-2 bg-black/70 text-white text-xs font-medium px-2 py-1 rounded-lg backdrop-blur-sm">
+                                            <Image className="w-3 h-3 inline mr-1" />
+                                            {pg.images.length}
+                                        </div>
+                                    )}
+                                </div>
+
+                                {/* Content Section */}
+                                <div className="p-4 space-y-3">
+                                    {/* Title and Location */}
+                                    <div>
+                                        <h3 className="font-bold text-foreground group-hover:text-orange-600 transition-colors">{pg.name}</h3>
+                                        <div className="flex items-center gap-1 text-sm text-muted-foreground mt-1">
+                                            <MapPin className="w-3 h-3" />
+                                            {pg.city}, {pg.locality}
+                                        </div>
+                                    </div>
+
+                                    {/* Key Metrics */}
+                                    <div className="flex items-center justify-between text-sm">
+                                        <div className="flex items-center gap-3">
+                                            <div className="flex items-center gap-1 text-zinc-600 dark:text-zinc-400">
+                                                <Bed className="w-4 h-4" />
+                                                <span className="font-medium">{availableBeds}/{totalBeds}</span>
+                                            </div>
+                                            {startingPrice > 0 && (
+                                                <div className="text-orange-600 dark:text-orange-500 font-semibold">
+                                                    ₹{startingPrice.toLocaleString()}/mo
+                                                </div>
+                                            )}
+                                        </div>
+                                    </div>
+
+                                    {/* Action Buttons */}
+                                    <div className="flex gap-2 pt-2">
+                                        <Link href={`/admin/pgs/${pg.id}/edit`} className="flex-1">
+                                            <Button variant="outline" size="sm" className="w-full text-xs">
+                                                <Edit className="w-3 h-3 mr-1" />
+                                                Edit
+                                            </Button>
+                                        </Link>
+                                        <Link href={`/admin/pgs/${pg.id}/preview`} className="flex-1">
+                                            <Button variant="secondary" size="sm" className="w-full text-xs">
+                                                <ArrowRight className="w-3 h-3 mr-1" />
+                                                View
+                                            </Button>
+                                        </Link>
+                                    </div>
+                                </div>
                             </div>
-                        </div>
-                    ))}
+                        );
+                    })}
                 </div>
              </Card>
         </div>

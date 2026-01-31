@@ -87,7 +87,7 @@ export function AdminSidebar() {
                             <div className="flex flex-col">
                                 <span className="font-bold text-base tracking-tight leading-none text-foreground">Admin<span className="text-orange-600 dark:text-orange-500">Panel</span></span>
                                 <span className="text-[10px] text-muted-foreground font-medium uppercase tracking-widest mt-1">
-                                    {pgId ? "Property View" : "Main Hub"}
+                                    {pgId ? "Property View" : "Admin Hub"}
                                 </span>
                             </div>
                         )}
@@ -97,7 +97,10 @@ export function AdminSidebar() {
                             <X className="w-5 h-5" />
                         </Button>
                     ) : (
-                        <Button onClick={() => setIsOpen(!isOpen)} className="hidden md:flex p-1.5 rounded-md hover:bg-accent text-muted-foreground transition-colors">
+                        <Button 
+                            onClick={() => setIsOpen(!isOpen)} 
+                            className="hidden md:flex p-1.5 rounded-md bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 text-zinc-600 dark:text-zinc-400 transition-all duration-200" 
+                        >
                             <ChevronLeft className={cn("w-5 h-5 transition-transform duration-300", !isOpen && "rotate-180")} />
                         </Button>
                     )}

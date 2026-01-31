@@ -1,8 +1,13 @@
 import { db } from "@/db";
-import { pgs, rooms } from "@/db/schema";
-import { eq, and, or, ilike, asc } from "drizzle-orm";
+import { pgs, rooms, beds } from "@/db/schema";
+import { eq, and, or, ilike, asc, count } from "drizzle-orm";
 import PGGrid from "@/components/public/discovery/PGGrid";
 import MainLayout from "@/components/layout/MainLayout";
+import { Button } from "@/components/ui/button";
+import Link from "next/link";
+import { revalidatePath } from "next/cache";
+
+export const revalidate = 0; // Disable caching for this page
 
 export default async function PGListingPage({
   searchParams,
@@ -15,7 +20,10 @@ export default async function PGListingPage({
 
   const filters = [];
   filters.push(eq(pgs.isPublished, true)); // Only show published PGs
-  if (city) filters.push(eq(pgs.city, city));
+  
+  if (city) {
+    filters.push(ilike(pgs.city, city)); // Use ilike for case-insensitive matching
+  }
   if (gender) {
     const validGender = gender.toUpperCase() as "MALE" | "FEMALE" | "UNISEX";
     filters.push(eq(pgs.gender, validGender));
@@ -35,16 +43,39 @@ export default async function PGListingPage({
       orderBy: [asc(pgs.name)],
       with: {
         rooms: {
-          columns: { basePrice: true },
+          with: {
+            beds: {
+              columns: {
+                isOccupied: true,
+              },
+            },
+          },
+          columns: {
+            basePrice: true,
+            capacity: true,
+            isAvailable: true,
+          },
           orderBy: [asc(rooms.basePrice)],
         },
       },
     });
 
-    const formattedResults = results.map((pg) => ({
-      ...pg,
-      startingPrice: pg.rooms && pg.rooms.length > 0 ? pg.rooms[0].basePrice : 0,
-    }));
+    const formattedResults = results.map((pg) => {
+      // Calculate bed statistics
+      const allBeds = pg.rooms.flatMap(room => room.beds);
+      const totalBeds = allBeds.length;
+      const availableBeds = allBeds.filter(bed => !bed.isOccupied).length;
+      
+      console.log(`🔍 Debug - PG: ${pg.name}, Total Beds: ${totalBeds}, Available: ${availableBeds}`);
+      console.log(`🔍 Debug - Rooms: ${pg.rooms.length}, All beds:`, allBeds);
+      
+      return {
+        ...pg,
+        startingPrice: pg.rooms && pg.rooms.length > 0 ? pg.rooms[0].basePrice : 0,
+        totalBeds,
+        availableBeds,
+      };
+    });
 
     return (
       <MainLayout>
@@ -62,7 +93,19 @@ export default async function PGListingPage({
             <PGGrid pgs={formattedResults} />
           ) : (
             <div className="py-20 text-center bg-zinc-50 dark:bg-zinc-900 rounded-3xl border border-dashed border-zinc-200">
-              <p className="text-zinc-500">No properties found. Try adjusting your filters.</p>
+              <div className="max-w-md mx-auto">
+                <h3 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100 mb-2">
+                  No properties found
+                </h3>
+                <p className="text-zinc-500 mb-4">
+                  Try adjusting your filters or search for properties in Bangalore or Gurugram.
+                </p>
+                <Link href="/pgs">
+                  <Button variant="outline" className="rounded-full">
+                    View All Properties
+                  </Button>
+                </Link>
+              </div>
             </div>
           )}
         </div>
@@ -74,7 +117,7 @@ export default async function PGListingPage({
       <MainLayout>
         <div className="py-20 text-center">
           <h2 className="text-xl font-bold text-red-600">Connection Issue</h2>
-          <p className="text-zinc-500">Could not reach the database. Try switching to a mobile hotspot if port 5432 is blocked.</p>
+          <p className="text-zinc-500">Could not reach the database. Please try again later.</p>
         </div>
       </MainLayout>
     );

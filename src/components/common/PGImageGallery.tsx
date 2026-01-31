@@ -188,7 +188,10 @@ export function PGImageThumbnail({
   alt: string;
   className?: string;
 }) {
-  const imageSrc = src || DEFAULT_IMAGES.pgThumbnail;
+  // Use 30-minute cache busting for more frequent updates
+  const now = new Date();
+  const timeKey = `${now.getFullYear()}-${now.getMonth()}-${now.getDate()}-${now.getHours()}-${Math.floor(now.getMinutes() / 30)}`;
+  const imageSrc = src ? `${src}${src.includes('?') ? '&' : '?'}v=${timeKey}` : DEFAULT_IMAGES.pgThumbnail;
 
   return (
     <div className={`relative bg-zinc-100 dark:bg-zinc-800 overflow-hidden ${className}`}>

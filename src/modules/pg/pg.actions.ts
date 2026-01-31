@@ -203,7 +203,7 @@ export async function getOwnerPGs() {
 }
 
 /**
- * Get a single PG with all rooms
+ * Get a single PG with all rooms and beds
  */
 export async function getPGWithRooms(pgId: string) {
   const { userId } = await auth();
@@ -221,12 +221,61 @@ export async function getPGWithRooms(pgId: string) {
   }
 
   const roomsData = await db
-    .select()
+    .select({
+      id: rooms.id,
+      pgId: rooms.pgId,
+      roomNumber: rooms.roomNumber,
+      type: rooms.type,
+      basePrice: rooms.basePrice,
+      deposit: rooms.deposit,
+      noticePeriod: rooms.noticePeriod,
+      roomImages: rooms.roomImages,
+      amenities: rooms.amenities,
+      capacity: rooms.capacity,
+      isAvailable: rooms.isAvailable,
+      createdAt: rooms.createdAt,
+      updatedAt: rooms.updatedAt,
+    })
     .from(rooms)
     .where(eq(rooms.pgId, pgId))
     .execute();
 
-  return { pg: pgData[0], rooms: roomsData };
+  // Fetch beds for each room
+  const roomsWithBeds = await Promise.all(
+    roomsData.map(async (room) => {
+      const bedsData = await db
+        .select({
+          id: beds.id,
+          roomId: beds.roomId,
+          isOccupied: beds.isOccupied,
+          bedNumber: beds.bedNumber,
+        })
+        .from(beds)
+        .where(eq(beds.roomId, room.id))
+        .execute();
+
+      return {
+        ...room,
+        beds: bedsData,
+      };
+    })
+  );
+
+  // Calculate bed statistics for the PG
+  const allBeds = roomsWithBeds.flatMap(room => room.beds);
+  const totalBeds = allBeds.length;
+  const availableBeds = allBeds.filter(bed => !bed.isOccupied).length;
+
+  const pg = pgData[0];
+  
+  return { 
+    pg: {
+      ...pg,
+      totalBeds,
+      availableBeds,
+    }, 
+    rooms: roomsWithBeds 
+  };
 }
 
 /**

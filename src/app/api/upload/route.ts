@@ -111,6 +111,7 @@ export async function POST(request: NextRequest) {
 
     // Upload to Cloudinary
     try {
+
       const cloudinaryFormData = new FormData();
       // Convert Buffer to Uint8Array for FormData compatibility
       cloudinaryFormData.append('file', new Blob([new Uint8Array(optimized)]), file.name);
@@ -118,17 +119,18 @@ export async function POST(request: NextRequest) {
       cloudinaryFormData.append('folder', 'pg-discovery-platform');
       cloudinaryFormData.append('resource_type', 'auto');
 
-      const cloudinaryResponse = await fetch(
-        `https://api.cloudinary.com/v1_1/${CLOUDINARY_CONFIG.cloudName}/image/upload`,
-        {
-          method: 'POST',
-          body: cloudinaryFormData,
-        }
-      );
+      const uploadUrl = `https://api.cloudinary.com/v1_1/${CLOUDINARY_CONFIG.cloudName}/image/upload`;
+
+      const cloudinaryResponse = await fetch(uploadUrl, {
+        method: 'POST',
+        body: cloudinaryFormData,
+      });
+
+      console.log('[Upload] Cloudinary response status:', cloudinaryResponse.status);
 
       if (!cloudinaryResponse.ok) {
         const errorData = await cloudinaryResponse.json();
-        console.error('[Upload] Cloudinary error:', errorData);
+        console.error('[Upload] Cloudinary error response:', errorData);
         throw new Error(errorData.error?.message || 'Cloudinary upload failed');
       }
 

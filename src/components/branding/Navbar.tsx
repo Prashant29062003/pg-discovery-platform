@@ -22,6 +22,7 @@ import MobileNav from "./MobileNav";
 import EnquiryForm from "../visitor/forms/EnquiryForm";
 import UserMenu from "@/components/visitor/dashboard/UserMenu";
 import { useUser } from '@clerk/nextjs';
+import { CityNav } from "./CityNav";
 
 
 
@@ -59,31 +60,8 @@ export default function Navbar({ requireAuth = false }: NavbarProps) {
             <NavigationMenu>
               <NavigationMenuList>
 
-                {/* 1. LOCATIONS */}
-                <NavigationMenuItem>
-                  <NavigationMenuTrigger className="bg-transparent text-zinc-600 dark:text-zinc-300">
-                    Find a Stay
-                  </NavigationMenuTrigger>
-                  <NavigationMenuContent>
-                    <div className="grid w-[550px] grid-cols-2 p-4 bg-white dark:bg-zinc-950">
-                      <div className="col-span-1 border-r border-zinc-100 dark:border-zinc-800 pr-4">
-                        <p className="text-[10px] font-bold uppercase tracking-widest text-zinc-400 mb-3 px-3">Active Cities</p>
-                        <ListItem title="Gurugram" href="/pgs?city=gurugram" icon={<Map className="w-4 h-4 text-orange-500" />}>
-                          Noble Enclave & Palam Vihar premium stays.
-                        </ListItem>
-                        <ListItem title="Noida" href="/pgs?city=noida" icon={<Building2 className="w-4 h-4 text-blue-500" />}>
-                          Sector 62 & IT Park corporate hubs.
-                        </ListItem>
-                      </div>
-                      <div className="col-span-1 pl-4">
-                        <p className="text-[10px] font-bold uppercase tracking-widest text-zinc-400 mb-3 px-3">Expanding Soon</p>
-                        <ListItem title="Bangalore" href="#" disabled className="opacity-50 cursor-not-allowed">
-                          Whitefield (Early access opening soon).
-                        </ListItem>
-                      </div>
-                    </div>
-                  </NavigationMenuContent>
-                </NavigationMenuItem>
+                {/* 1. LOCATIONS - Dynamic from Database */}
+                <CityNav />
 
                 {/* 2. WHY ELITE VENUE */}
                 <NavigationMenuItem>
@@ -113,7 +91,7 @@ export default function Navbar({ requireAuth = false }: NavbarProps) {
                         href="/#locations"
                         icon={<MapPin className="w-4 h-4 text-red-500" />}
                       >
-                        Active in Gurugram, Noida. Expanding to Bangalore soon.
+                        Currently available in major cities. Expanding to new locations soon.
                       </ListItem>
 
                       <ListItem
