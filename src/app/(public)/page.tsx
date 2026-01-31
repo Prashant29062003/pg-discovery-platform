@@ -1,8 +1,8 @@
 import { db } from "@/db";
+import { pgs, rooms, beds } from "@/db/schema";
+import { eq, and, or, ilike, asc } from "drizzle-orm";
 import PGGrid from "@/components/public/discovery/PGGrid";
 import MainLayout from "@/components/layout/MainLayout";
-import { ilike, or, asc } from "drizzle-orm";
-import { pgs, rooms } from "@/db/schema";
 
 export default async function PGSPage({
     searchParams,
@@ -20,18 +20,33 @@ export default async function PGSPage({
             : undefined,
         with: {
             rooms: {
+                with: {
+                    beds: {
+                        columns: {
+                            isOccupied: true,
+                        },
+                    },
+                },
                 columns: { basePrice: true },
-                orderBy: [asc(rooms.basePrice)], // Ensure we get the actual lowest price
-                limit: 1,
+                orderBy: [asc(rooms.basePrice)],
             }
         }
     });
 
     // 2. Format the data for your component
-    const formattedPgs = pgsData.map((pg) => ({
-        ...pg,
-        startingPrice: pg.rooms[0]?.basePrice ?? 0
-    }));
+    const formattedPgs = pgsData.map((pg) => {
+        // Calculate bed statistics
+        const allBeds = pg.rooms.flatMap(room => room.beds);
+        const totalBeds = allBeds.length;
+        const availableBeds = allBeds.filter(bed => !bed.isOccupied).length;
+        
+        return {
+            ...pg,
+            startingPrice: pg.rooms[0]?.basePrice ?? 0,
+            totalBeds,
+            availableBeds,
+        };
+    });
 
     return (
         <MainLayout>
