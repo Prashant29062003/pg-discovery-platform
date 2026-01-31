@@ -8,8 +8,8 @@ import { Badge } from "@/components/ui/badge";
 import { AlertCircle, Plus, RefreshCw, DoorOpen, BedDouble, Users, Edit, Trash2, Eye } from "lucide-react";
 import Link from "next/link";
 import { RoomForm } from "@/components/admin/forms/RoomForm";
-import { BedManager } from "@/components/admin/BedManager";
-import { useToast } from "@/hooks/use-toast";
+import BedManager from "@/components/admin/BedManager";
+import { showToast } from "@/utils/toast";
 import { useAppStore } from "@/store/useAppStore";
 import { usePropertyData } from '@/hooks/usePropertyData';
 import { 
@@ -38,27 +38,41 @@ export default function RoomsPage({ params: paramsPromise }: RoomsPageProps) {
   const fetchRoomsDirect = async () => {
     if (!pgId) return;
     
+    setLoading(true);
+    setError(null);
+    
     try {
-      setLoading(true);
-      setError(null);
+      showToast.info('Loading rooms...', 'Fetching latest room inventory');
       
-      const response = await fetch(`/api/rooms-direct?pgId=${pgId}`);
+      const response = await fetch(`/api/pgs/${pgId}/rooms`);
       
       if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
       }
       
       const data = await response.json();
       
+      // Handle different response formats
+      let roomsData = [];
       if (Array.isArray(data)) {
-        setRooms(data);
+        roomsData = data;
+      } else if (data && Array.isArray(data.rooms)) {
+        roomsData = data.rooms;
+      } else if (data && Array.isArray(data.data)) {
+        roomsData = data.data;
       } else {
-        setRooms([]);
-        setError('Invalid data format received');
+        console.warn('Unexpected data format:', data);
+        roomsData = [];
+        showToast.warning('Unexpected data format', 'Received non-standard response format. Showing empty rooms list.');
       }
+      
+      setRooms(roomsData);
+      showToast.success('Rooms loaded successfully', `Found ${roomsData.length} room${roomsData.length !== 1 ? 's' : ''}`);
     } catch (err: any) {
-      setError('Failed to fetch rooms: ' + (err?.message || 'Unknown error'));
-      setRooms([]);
+      const errorMessage = `Failed to fetch rooms: ${err?.message || 'Unknown error'}`;
+      setError(errorMessage);
+      showToast.error('Failed to load rooms', 'Please check your connection and try again');
+      console.error('❌ Room fetch error:', err);
     } finally {
       setLoading(false);
     }
@@ -70,10 +84,21 @@ export default function RoomsPage({ params: paramsPromise }: RoomsPageProps) {
     
     try {
       const response = await fetch(`/api/pgs/${pgId}`);
+      
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: Failed to load property details`);
+      }
+      
       const data = await response.json();
       setPg(data);
-    } catch (err) {
-      console.error('❌ Failed to fetch PG data:', err);
+      
+      if (data?.name) {
+        showToast.brand('Property loaded', `Now managing: ${data.name}`);
+      }
+    } catch (err: any) {
+      const errorMessage = `Failed to fetch property data: ${err?.message || 'Unknown error'}`;
+      showToast.error('Property not found', 'Unable to load property details. Please check the property ID.');
+      console.error('❌ PG data fetch error:', err);
     }
   };
 
@@ -166,7 +191,10 @@ export default function RoomsPage({ params: paramsPromise }: RoomsPageProps) {
               variant="outline" 
               size="lg"
               className="gap-2"
-              onClick={fetchRoomsDirect}
+              onClick={() => {
+                showToast.info('Refreshing rooms...', 'Updating room inventory with latest data');
+                fetchRoomsDirect();
+              }}
               disabled={loading}
             >
               <RefreshCw className={`w-5 h-5 ${loading ? 'animate-spin' : ''}`} />
