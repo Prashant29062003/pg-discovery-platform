@@ -1,5 +1,5 @@
 import { db } from "@/db";
-import { pgs, rooms } from "@/db/schema";
+import { pgs, rooms, beds } from "@/db/schema";
 import { CITIES } from "@/config";
 import PGGrid from "@/components/public/discovery/PGGrid";
 import PropertyFilters from "@/components/visitor/filters/PropertyFilters";
@@ -33,13 +33,33 @@ export default async function CityPage({
 
     const pgsData = await db.query.pgs.findMany({
         where: and(...filters),
-        with: { rooms: { orderBy: [asc(rooms.basePrice)] } }
+        with: { 
+            rooms: {
+                with: {
+                    beds: {
+                        columns: {
+                            isOccupied: true,
+                        },
+                    },
+                },
+                orderBy: [asc(rooms.basePrice)] 
+            } 
+        }
     });
 
-    const formattedPgs = pgsData.map((pg) => ({
-        ...pg,
-        startingPrice: pg.rooms[0]?.basePrice ?? 0
-    }));
+    const formattedPgs = pgsData.map((pg) => {
+        // Calculate bed statistics
+        const allBeds = pg.rooms.flatMap(room => room.beds);
+        const totalBeds = allBeds.length;
+        const availableBeds = allBeds.filter(bed => !bed.isOccupied).length;
+        
+        return {
+            ...pg,
+            startingPrice: pg.rooms[0]?.basePrice ?? 0,
+            totalBeds,
+            availableBeds,
+        };
+    });
 
     return (
         <MainLayout>

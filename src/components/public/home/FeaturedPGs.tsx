@@ -1,5 +1,5 @@
 import { db } from "@/db";
-import { pgs as pgsTable, rooms } from "@/db/schema";
+import { pgs as pgsTable, rooms, beds } from "@/db/schema";
 import PGGrid from "@/components/public/discovery/PGGrid";
 import { ArrowRight } from "lucide-react";
 import Link from "next/link";
@@ -12,6 +12,13 @@ export default async function FeaturedPGs() {
         limit: 3,
         with: {
             rooms: {
+                with: {
+                    beds: {
+                        columns: {
+                            isOccupied: true,
+                        },
+                    },
+                },
                 columns: { basePrice: true },
                 orderBy: [asc(rooms.basePrice)],
                 limit: 1
@@ -19,11 +26,20 @@ export default async function FeaturedPGs() {
         }
     });
 
-    // 2. Format data to include startingPrice (Types are automatically inferred!)
-    const pgs = featuredData.map((pg) => ({
-        ...pg,
-        startingPrice: pg.rooms[0]?.basePrice ?? 0
-    }));
+    // 2. Format data to include startingPrice and bed counts
+    const pgs = featuredData.map((pg) => {
+        // Calculate bed statistics
+        const allBeds = pg.rooms.flatMap(room => room.beds);
+        const totalBeds = allBeds.length;
+        const availableBeds = allBeds.filter(bed => !bed.isOccupied).length;
+        
+        return {
+            ...pg,
+            startingPrice: pg.rooms[0]?.basePrice ?? 0,
+            totalBeds,
+            availableBeds,
+        };
+    });
 
     if (pgs.length === 0) return null;
 
