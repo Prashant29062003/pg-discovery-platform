@@ -120,7 +120,7 @@ export default function BedsPage({ params: paramsPromise }: BedsPageProps) {
             <h1 className="text-3xl font-bold tracking-tight text-zinc-900 dark:text-zinc-50">
               Room {roomId.slice(-4).toUpperCase()}
             </h1>
-            <span className="px-2 py-0.5 rounded-full bg-zinc-100 dark:bg-zinc-800 text-zinc-500 text-xs font-mono uppercase tracking-wider border border-zinc-200 dark:border-zinc-700">
+            <span className="px-2 py-0.5 rounded-full bg-zinc-100 dark:bg-zinc-800 text-zinc-500 text-xs font-mono uppercase tracking-wider border border-zinc-200 dark:border-zinc-700 shadow-sm dark:shadow-zinc-900/50 dark:text-zinc-400">
               Beds Management
             </span>
           </div>

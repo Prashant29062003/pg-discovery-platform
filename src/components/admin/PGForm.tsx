@@ -157,30 +157,26 @@ export default function PGForm({ initialData }: PGFormProps) {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
+    <form onSubmit={handleSubmit} className="space-y-6 px-2 sm:px-0">
       {/* Error Alert */}
       {errors.submit && (
-        <Alert variant="destructive">
+        <Alert variant="destructive" className="mx-2 sm:mx-0">
           <AlertCircle className="h-4 w-4" />
           <AlertDescription>{errors.submit}</AlertDescription>
         </Alert>
       )}
 
-      {/* Tabs Navigation */}
+      {/* Tabs Navigation - Single row for all screens */}
       <Tabs defaultValue="basic" className="w-full">
-        <TabsList className="grid w-full grid-cols-6 lg:grid-cols-8">
-          <TabsTrigger value="basic">Basic</TabsTrigger>
-          <TabsTrigger value="images">Images</TabsTrigger>
-          <TabsTrigger value="location">Location</TabsTrigger>
-          <TabsTrigger value="amenities">Amenities</TabsTrigger>
-          <TabsTrigger value="hours">Hours</TabsTrigger>
-          <TabsTrigger value="policies">Policies</TabsTrigger>
-          <TabsTrigger value="contact" className="hidden sm:block">
-            Contact
-          </TabsTrigger>
-          <TabsTrigger value="status" className="hidden lg:block">
-            Status
-          </TabsTrigger>
+        <TabsList className="grid w-full grid-cols-4 sm:grid-cols-6 lg:grid-cols-8 bg-muted/50 p-1 rounded-lg">
+          <TabsTrigger value="basic" className="text-xs sm:text-sm">Basic</TabsTrigger>
+          <TabsTrigger value="images" className="text-xs sm:text-sm">Images</TabsTrigger>
+          <TabsTrigger value="location" className="text-xs sm:text-sm">Location</TabsTrigger>
+          <TabsTrigger value="amenities" className="text-xs sm:text-sm">Amenities</TabsTrigger>
+          <TabsTrigger value="hours" className="text-xs sm:text-sm">Hours</TabsTrigger>
+          <TabsTrigger value="policies" className="text-xs sm:text-sm">Policies</TabsTrigger>
+          <TabsTrigger value="contact" className="text-xs sm:text-sm">Contact</TabsTrigger>
+          <TabsTrigger value="status" className="text-xs sm:text-sm">Status</TabsTrigger>
         </TabsList>
 
         {/* BASIC INFORMATION TAB */}
@@ -261,13 +257,13 @@ export default function PGForm({ initialData }: PGFormProps) {
       </Tabs>
 
       {/* ACTION BUTTONS */}
-      <div className="flex gap-3 sticky bottom-0 bg-white dark:bg-zinc-950 p-4 border-t border-zinc-200 dark:border-zinc-800 rounded-b-lg">
+      <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 sticky bottom-0 bg-white dark:bg-zinc-950 p-4 sm:p-6 border-t border-zinc-200 dark:border-zinc-800 rounded-b-lg -mx-2 sm:mx-0">
         <Button
           type="button"
           variant="outline"
           onClick={() => router.back()}
           disabled={loading}
-          className="border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 hover:bg-zinc-50 dark:hover:bg-zinc-800"
+          className="w-full sm:w-auto border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 hover:bg-zinc-50 dark:hover:bg-zinc-800 h-12 sm:h-10 text-sm sm:text-base"
         >
           <X className="h-4 w-4 mr-2" />
           Cancel
@@ -275,7 +271,7 @@ export default function PGForm({ initialData }: PGFormProps) {
         <Button
           type="submit"
           disabled={loading}
-          className="ml-auto bg-blue-600 hover:bg-blue-700 dark:bg-blue-600 dark:hover:bg-blue-700 text-white"
+          className="w-full sm:w-auto ml-0 sm:ml-auto bg-blue-600 hover:bg-blue-700 dark:bg-blue-600 dark:hover:bg-blue-700 text-white h-12 sm:h-10 text-sm sm:text-base"
         >
           <Save className="h-4 w-4 mr-2" />
           {loading ? 'Saving...' : 'Save Property'}

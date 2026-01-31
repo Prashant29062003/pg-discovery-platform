@@ -75,20 +75,20 @@ export default function EditPGPage() {
 
   if (!pg || error) {
     return (
-      <div className="max-w-2xl">
+      <div className="max-w-2xl mx-auto w-full px-2 sm:px-0">
         <Link href="/admin/pgs">
           <Button variant="ghost" size="sm" className="gap-2 mb-4">
             <ArrowLeft className="w-4 h-4" />
             Back to Properties
           </Button>
         </Link>
-        <div className="p-8 text-center">
+        <div className="p-4 sm:p-8 text-center">
           <div className="flex flex-col items-center gap-2">
-            <AlertCircle className="w-12 h-12 text-red-500 mb-2" />
-            <p className="text-red-700 dark:text-red-400 font-medium">
+            <AlertCircle className="w-8 h-8 sm:w-12 sm:h-12 text-red-500 mb-2" />
+            <p className="text-red-700 dark:text-red-400 font-medium text-sm sm:text-base">
               {error || 'Property not found'}
             </p>
-            <p className="text-sm text-gray-600 dark:text-gray-400 mt-2">
+            <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 mt-2">
               Please make sure you own this property and it exists in the database.
             </p>
           </div>
@@ -98,27 +98,30 @@ export default function EditPGPage() {
   }
 
   return (
-    <div className="space-y-8 max-w-7xl mx-auto pb-10 px-4 sm:px-6">
-      <div className="border-b border-zinc-200 dark:border-zinc-800 pb-6">
-        <div className="flex items-center gap-2 mb-4">
+    <div className="space-y-6 sm:space-y-8 max-w-7xl mx-auto pb-8 sm:pb-10 px-2 sm:px-4 lg:px-6">
+      <div className="border-b border-zinc-200 dark:border-zinc-800 pb-4 sm:pb-6">
+        <div className="flex items-center gap-2 mb-3 sm:mb-4">
           <Link href="/admin/pgs">
-            <Button variant="ghost" size="sm" className="gap-2">
-              <ArrowLeft className="w-4 h-4" />
-              Back to Properties
+            <Button variant="ghost" size="sm" className="gap-2 h-8 sm:h-9">
+              <ArrowLeft className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+              <span className="hidden xs:inline">Back to Properties</span>
+              <span className="xs:hidden">Back</span>
             </Button>
           </Link>
         </div>
-        <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-1">
+        <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-gray-100 mb-1">
           Edit - {pg.name}
         </h1>
-        <p className="text-gray-600 dark:text-gray-400">
+        <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400">
           Update property details. Current data is loaded from the database below.
         </p>
       </div>
 
-      <PGForm
-        initialData={pg}
-      />
+      <div className="w-full">
+        <PGForm
+          initialData={pg}
+        />
+      </div>
     </div>
   );
 }

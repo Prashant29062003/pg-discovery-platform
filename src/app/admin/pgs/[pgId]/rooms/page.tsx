@@ -1,21 +1,24 @@
 'use client';
 
 import React from 'react';
-import Link from 'next/link';
-import { 
-  Plus, ArrowLeft, DoorOpen, AlertCircle, RefreshCw 
-} from 'lucide-react';
-
-import { Button } from '@/components/ui/button';
-import { RoomListItem } from '@/components/visitor/dashboard/RoomListItem';
-import { PropertyNavTabs } from '@/components/admin/PropertyNavTabs';
+import { PropertyNavTabs } from "@/components/admin/PropertyNavTabs";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { AlertCircle, Plus, RefreshCw, DoorOpen, BedDouble, Users, Edit, Trash2, Eye } from "lucide-react";
+import Link from "next/link";
+import { RoomForm } from "@/components/admin/forms/RoomForm";
+import { BedManager } from "@/components/admin/BedManager";
+import { useToast } from "@/hooks/use-toast";
+import { useAppStore } from "@/store/useAppStore";
 import { usePropertyData } from '@/hooks/usePropertyData';
 import { 
   EmptyState, EmptyStateIcon, EmptyStateTitle, 
   EmptyStateDescription, EmptyStateAction 
 } from '@/components/ui/empty-state';
 import { cn } from '@/utils';
-import { Card } from '@/components/ui/card';
+import RoomListItem from '@/components/visitor/dashboard/RoomListItem';
+import { AdminBreadcrumbs } from '@/components/admin/layout/AdminBreadcrumbs';
 
 interface RoomsPageProps {
   params: Promise<{
@@ -38,7 +41,6 @@ export default function RoomsPage({ params: paramsPromise }: RoomsPageProps) {
     try {
       setLoading(true);
       setError(null);
-      console.log('🔄 Fetching rooms directly from database...');
       
       const response = await fetch(`/api/rooms-direct?pgId=${pgId}`);
       
@@ -47,19 +49,14 @@ export default function RoomsPage({ params: paramsPromise }: RoomsPageProps) {
       }
       
       const data = await response.json();
-      console.log('📊 Direct fetch result:', data);
-      console.log('📊 Data type:', typeof data);
-      console.log('📊 Is array?', Array.isArray(data));
       
       if (Array.isArray(data)) {
         setRooms(data);
       } else {
-        console.error('❌ Expected array but got:', data);
         setRooms([]);
         setError('Invalid data format received');
       }
     } catch (err: any) {
-      console.error('❌ Direct fetch error:', err);
       setError('Failed to fetch rooms: ' + (err?.message || 'Unknown error'));
       setRooms([]);
     } finally {
@@ -133,48 +130,49 @@ export default function RoomsPage({ params: paramsPromise }: RoomsPageProps) {
     <div className="space-y-8 max-w-7xl mx-auto pb-10 px-4 sm:px-6">
       
         {/* 1. HEADER SECTION (Theme Fixed) */}
-      <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 border-b border-zinc-200 dark:border-zinc-800 pb-6">
-        <div className="space-y-1">
-          <Link href="/admin/pgs">
-            <Button variant="ghost" size="sm" className="gap-2 -ml-2 text-zinc-500 hover:text-orange-600 transition-colors">
-              <ArrowLeft className="w-4 h-4" />
-              Back to Properties
-            </Button>
-          </Link>
-          <div className="flex items-center gap-3 mt-2">
-            <h1 className="text-3xl font-bold tracking-tight text-zinc-900 dark:text-zinc-50">
-              {pg?.name}
-            </h1>
-            <span className="px-2.5 py-0.5 rounded-full bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-400 text-xs font-semibold border border-orange-200 dark:border-orange-800/50">
-              Inventory
-            </span>
-          </div>
-          <p className="text-zinc-500 dark:text-zinc-400">
-            Manage room distribution, pricing, and specific bed configurations.
-          </p>
+      <div className="space-y-4">
+        {/* Mobile Breadcrumbs - Only visible on mobile where navbar breadcrumbs are hidden */}
+        <div className="md:hidden">
+          <AdminBreadcrumbs />
         </div>
+        
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 border-b border-zinc-200 dark:border-zinc-800 pb-6">
+          <div className="space-y-1">
+            <div className="flex items-center gap-3 mt-2">
+              <h1 className="text-3xl font-bold tracking-tight text-zinc-900 dark:text-zinc-50">
+                {pg?.name}
+              </h1>
+              <span className="px-2.5 py-0.5 rounded-full bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-400 text-xs font-semibold border border-orange-200 dark:border-orange-800/50">
+                Inventory
+              </span>
+            </div>
+            <p className="text-zinc-500 dark:text-zinc-400">
+              Manage room distribution, pricing, and specific bed configurations.
+            </p>
+          </div>
 
-        <div className="flex items-center justify-between gap-4">
-          <Link href={`/admin/pgs/${pgId}/rooms/new`}>
+          <div className="flex items-center justify-between gap-4">
+            <Link href={`/admin/pgs/${pgId}/rooms/new`}>
+              <Button 
+                size="lg" 
+                className="gap-2 bg-orange-600 hover:bg-orange-700 text-white shadow-md hover:shadow-lg transition-all"
+              >
+                <Plus className="w-5 h-5" />
+                Add New Room
+              </Button>
+            </Link>
+            
             <Button 
-              size="lg" 
-              className="gap-2 bg-orange-600 hover:bg-orange-700 text-white shadow-md hover:shadow-lg transition-all"
+              variant="outline" 
+              size="lg"
+              className="gap-2"
+              onClick={fetchRoomsDirect}
+              disabled={loading}
             >
-              <Plus className="w-5 h-5" />
-              Add New Room
+              <RefreshCw className={`w-5 h-5 ${loading ? 'animate-spin' : ''}`} />
+              Refresh
             </Button>
-          </Link>
-          
-          <Button 
-            variant="outline" 
-            size="lg"
-            className="gap-2"
-            onClick={fetchRoomsDirect}
-            disabled={loading}
-          >
-            <RefreshCw className={`w-5 h-5 ${loading ? 'animate-spin' : ''}`} />
-            Refresh
-          </Button>
+          </div>
         </div>
       </div>
 
@@ -206,7 +204,6 @@ export default function RoomsPage({ params: paramsPromise }: RoomsPageProps) {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {Array.isArray(rooms) && rooms.map((room) => {
-            console.log(`🏠 Rendering room: ${room.roomNumber} - Type: ${room.type} - Beds: ${room.bedCount}`);
             return (
               <RoomListItem key={room.id} room={room} pgId={pgId} />
             );

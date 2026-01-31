@@ -18,9 +18,10 @@ import { Button } from '@/components/ui/button';
 
 interface UserMenuProps {
   showLabel?: boolean;
+  variant?: 'default' | 'circle';
 }
 
-export default function UserMenu({ showLabel = true }: UserMenuProps) {
+export default function UserMenu({ showLabel = true, variant = 'default' }: UserMenuProps) {
   const { user, isLoaded } = useUser();
   const { signOut } = useClerk();
   const router = useRouter();
@@ -32,7 +33,10 @@ export default function UserMenu({ showLabel = true }: UserMenuProps) {
 
   if (!mounted || !isLoaded || !user) {
     return (
-      <div className="w-full h-12 rounded-xl bg-zinc-100 dark:bg-zinc-800 animate-pulse" />
+      <div className={cn(
+        "animate-pulse",
+        variant === 'circle' ? "w-8 h-8 rounded-full bg-muted" : "w-full h-12 rounded-xl bg-zinc-100 dark:bg-zinc-800"
+      )} />
     );
   }
 
@@ -48,24 +52,34 @@ export default function UserMenu({ showLabel = true }: UserMenuProps) {
           variant="ghost"
           className={cn(
             // Removed default focus and added focus-visible for better Mouse UX
-            "group w-full flex items-center gap-3 p-2 h-auto rounded-xl transition-all border border-transparent select-none",
+            "group flex items-center transition-all border border-transparent select-none",
             "hover:bg-zinc-100 dark:hover:bg-zinc-900",
             "active:scale-[0.98] focus:ring-0 focus-visible:ring-2 focus-visible:ring-orange-500 focus-visible:outline-none",
-            !showLabel ? "justify-center" : "justify-start bg-zinc-50 dark:bg-zinc-900/50 border-zinc-200/50 dark:border-zinc-800"
+            variant === 'circle' 
+              ? "w-8 h-8 p-0 rounded-full justify-center" 
+              : "w-full gap-3 p-2 h-auto rounded-xl justify-start bg-zinc-50 dark:bg-zinc-900/50 border-zinc-200/50 dark:border-zinc-800"
           )}
         >
-          {/* Avatar Square - Clerk Style */}
-          <div className="h-9 w-9 shrink-0 rounded-lg bg-orange-600 overflow-hidden flex items-center justify-center shadow-md shadow-orange-600/20 border border-white/10">
+          {/* Avatar - Circle or Square based on variant */}
+          <div className={cn(
+            "shrink-0 overflow-hidden flex items-center justify-center shadow-md border border-white/10",
+            variant === 'circle' 
+              ? "w-6 h-6 rounded-full bg-orange-600 shadow-orange-600/20" 
+              : "h-9 w-9 rounded-lg bg-orange-600 shadow-orange-600/20"
+          )}>
             {user.imageUrl ? (
               <Image 
                 src={user.imageUrl} 
                 alt={user.firstName || 'User'} 
-                width={36} 
-                height={36} 
+                width={variant === 'circle' ? 24 : 36} 
+                height={variant === 'circle' ? 24 : 36} 
                 className="h-full w-full object-cover"
               />
             ) : (
-              <span className="text-white text-sm font-bold uppercase">
+              <span className={cn(
+                "text-white font-bold uppercase",
+                variant === 'circle' ? "text-[10px]" : "text-sm"
+              )}>
                 {user.firstName?.[0]}
               </span>
             )}

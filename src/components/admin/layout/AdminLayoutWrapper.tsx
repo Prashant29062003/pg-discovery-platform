@@ -4,12 +4,13 @@ import { ReactNode } from 'react';
 import { useSidebar } from '@/context/SidebarContext';
 import { AdminSidebar } from './AdminSidebar';
 import { AdminNavbar } from './AdminNavbar';
+import { ScrollToTop } from './ScrollToTop';
 
 export default function AdminLayoutWrapper({ children }: { children: ReactNode }) {
     const { isOpen } = useSidebar();
 
     return (
-        <div className="min-h-screen bg-background font-sans text-foreground selection:bg-orange-100 selection:text-orange-900 overflow-hidden">
+        <div className="min-h-screen bg-background font-sans text-foreground selection:bg-orange-100 selection:text-orange-900">
 
             {/* Fixed Sidebar */}
             <AdminSidebar />
@@ -26,6 +27,9 @@ export default function AdminLayoutWrapper({ children }: { children: ReactNode }
                     </div>
                 </main>
             </div>
+
+            {/* Scroll to Top and Navigation Helper */}
+            <ScrollToTop />
         </div>
     );
 }

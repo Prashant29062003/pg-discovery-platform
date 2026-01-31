@@ -6,10 +6,11 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Plus, Trash2, Bed, Edit2, Check, X } from 'lucide-react';
+import { Plus, Trash2, Bed, Edit2, Check, X, Edit, AlertTriangle, Users } from 'lucide-react';
 import { createBed, deleteBed, updateBed, getRoomBeds, updateRoom } from '@/modules/pg/room.actions';
 import { getRoomTypeByBedCount } from '@/lib/room-utils';
 import { showToast } from '@/utils/toast';
+import { ConfirmationDialog, useConfirmationDialog } from '@/components/ui/confirmation-dialog';
 
 interface Bed {
   id: string;
@@ -25,7 +26,7 @@ interface BedManagerProps {
   onBedsChange?: (beds: Bed[]) => void;
 }
 
-export function BedManager({ 
+export default function BedManager({ 
   roomId, 
   pgId,
   roomNumber,
@@ -36,6 +37,7 @@ export function BedManager({
   const [editingBedId, setEditingBedId] = useState<string | null>(null);
   const [editingBedName, setEditingBedName] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const { isOpen, openDialog, closeDialog, config } = useConfirmationDialog();
 
   useEffect(() => {
     setBeds(initialBeds);
@@ -147,66 +149,61 @@ export function BedManager({
     }
   };
 
-  const removeBed = async (bedId: string, e?: React.MouseEvent) => {
+  const removeBed = async (bedId: string, bedNumber: string, e?: React.MouseEvent) => {
     // Prevent form submission
     if (e) {
       e.preventDefault();
       e.stopPropagation();
     }
 
-    if (!confirm('Are you sure you want to delete this bed?')) return;
+    openDialog({
+      title: 'Delete Bed',
+      description: `Are you sure you want to delete bed "${bedNumber}"? This action cannot be undone and will permanently remove this bed from the room.`,
+      confirmText: 'Delete Bed',
+      cancelText: 'Cancel',
+      variant: 'destructive',
+      onConfirm: async () => {
+        // For existing rooms, delete immediately from database
+        // For new rooms, remove from local state only
+        if (roomId) {
+          setIsLoading(true);
+          try {
+            const result = await deleteBed(bedId);
 
-    // For existing rooms, delete immediately from database
-    // For new rooms, remove from local state only
-    if (roomId) {
-      setIsLoading(true);
-      try {
-        const result = await deleteBed(bedId);
-
-        if (result.success) {
-          // Refresh beds from database
-          const updatedBeds = await getRoomBeds(roomId!);
-          const mappedBeds = updatedBeds.map(bed => ({
-            id: bed.id,
-            bedNumber: bed.bedNumber || `Bed-${bed.id.slice(-4)}`,
-            isOccupied: bed.isOccupied
-          }));
+            if (result.success) {
+              // Refresh beds from database
+              const updatedBeds = await getRoomBeds(roomId!);
+              const mappedBeds = updatedBeds.map(bed => ({
+                id: bed.id,
+                bedNumber: bed.bedNumber || `Bed-${bed.id.slice(-4)}`,
+                isOccupied: bed.isOccupied
+              }));
+              
+              setBeds(mappedBeds);
+              onBedsChange?.(mappedBeds);
+              
+              // Update room type in database
+              await updateRoomTypeInDatabase(mappedBeds.length);
+              
+              showToast.success('Bed deleted successfully');
+            }
+          } catch (error) {
+            console.error('Error removing bed:', error);
+            showToast.error('Failed to delete bed', 'Please try again');
+          } finally {
+            setIsLoading(false);
+          }
+        } else {
+          // For new rooms, remove from local state only
+          const updatedBeds = beds.filter(bed => bed.id !== bedId);
+          setBeds(updatedBeds);
+          onBedsChange?.(updatedBeds);
           
-          setBeds(mappedBeds);
-          onBedsChange?.(mappedBeds);
-          
-          // Update room type in database
-          await updateRoomTypeInDatabase(mappedBeds.length);
-          
-          showToast.success('Bed deleted successfully');
+          const message = 'Bed removed from room (will be saved when room is created)';
+          showToast.success('Bed removed successfully', message);
         }
-      } catch (error) {
-        console.error('Error removing bed:', error);
-        showToast.error('Failed to delete bed', 'Please try again');
-      } finally {
-        setIsLoading(false);
       }
-    } else {
-      // For new rooms, remove from local state only
-      setIsLoading(true);
-      try {
-        const newBeds = beds.filter(bed => bed.id !== bedId);
-        console.log('Removing bed:', bedId);
-        console.log('Current beds before:', beds);
-        console.log('New beds after remove:', newBeds);
-        
-        setBeds(newBeds);
-        onBedsChange?.(newBeds);
-        
-        const message = 'Bed removed from room (will be saved when room is created)';
-        showToast.success('Bed removed successfully', message);
-      } catch (error) {
-        console.error('Error removing bed:', error);
-        showToast.error('Failed to delete bed', 'Please try again');
-      } finally {
-        setIsLoading(false);
-      }
-    }
+    });
   };
 
   const startEditingBed = (bed: Bed) => {
@@ -298,144 +295,155 @@ export function BedManager({
   };
 
   return (
-    <div className="space-y-4">
-      <Card className="p-4">
-        <div className="flex items-center justify-between mb-4">
-          <div className="flex items-center gap-2">
-            <Bed className="w-5 h-5 text-orange-600" />
-            <h3 className="font-semibold">Bed Management</h3>
-            <Badge variant="outline" className="ml-2">
-              {beds.length} bed{beds.length !== 1 ? 's' : ''}
-            </Badge>
+    <>
+      <div className="space-y-4">
+        <Card className="p-3 sm:p-4">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 mb-4">
+            <div className="flex items-center gap-2">
+              <Bed className="w-4 h-4 sm:w-5 sm:h-5 text-orange-600" />
+              <h3 className="font-semibold text-sm sm:text-base">Bed Management</h3>
+              <Badge variant="outline" className="ml-2 text-xs sm:text-sm">
+                {beds.length} bed{beds.length !== 1 ? 's' : ''}
+              </Badge>
+            </div>
+            <Button 
+              type="button"
+              onClick={addBed}
+              size="sm"
+              className="gap-2 bg-orange-600 hover:bg-orange-700 text-white w-full sm:w-auto h-9 sm:h-10"
+              disabled={isLoading}
+              title="Add a new bed"
+            >
+              <Plus className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+              {isLoading ? 'Adding...' : 'Add Bed'}
+            </Button>
           </div>
-          <Button 
-            type="button"
-            onClick={addBed}
-            size="sm"
-            className="gap-2 bg-orange-600 hover:bg-orange-700 text-white"
-            disabled={isLoading}
-            title="Add a new bed"
-          >
-            <Plus className="w-4 h-4" />
-            {isLoading ? 'Adding...' : 'Add Bed'}
-          </Button>
-        </div>
 
-        {/* Beds List */}
-        {beds.length === 0 ? (
-          <div className="text-center py-8 text-muted-foreground">
-            <Bed className="w-8 h-8 mx-auto mb-2 opacity-50" />
-            <p className="text-sm">No beds added yet</p>
-            <p className="text-xs">
-              {roomId 
-                ? 'Click "Add Bed" to create the first bed'
-                : 'Add beds above, then save the room to create them'
-              }
-            </p>
-          </div>
-        ) : (
-          <div className="space-y-2">
-            {beds.map((bed, index) => (
-              <div key={bed.id} className="flex items-center gap-3 p-3 bg-muted/30 rounded-lg">
-                <div className="w-8 h-8 rounded bg-background border flex items-center justify-center text-sm font-medium">
-                  {index + 1}
-                </div>
-                
-                <div className="flex-1">
-                  {editingBedId === bed.id ? (
-                    <div className="flex items-center gap-2">
-                      <Input
-                        value={editingBedName}
-                        onChange={(e) => setEditingBedName(e.target.value)}
-                        className="h-8 text-sm"
-                        placeholder="Bed name"
-                        onKeyDown={(e) => {
-                          if (e.key === 'Enter') saveBedName();
-                          if (e.key === 'Escape') cancelEditing();
-                        }}
-                      />
-                      <Button
-                        type="button"
-                        variant="outline"
-                        onClick={saveBedName}
-                        className="h-8 w-8 p-0"
-                      >
-                        <Check className="w-3 h-3" />
-                      </Button>
-                      <Button
-                        type="button"
-                        variant="outline"
-                        onClick={cancelEditing}
-                        className="h-8 w-8 p-0"
-                      >
-                        <X className="w-3 h-3" />
-                      </Button>
-                    </div>
-                  ) : (
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <p className="font-medium text-sm">{bed.bedNumber}</p>
-                        <p className="text-xs text-muted-foreground">
-                          Bed #{index + 1} in room
-                          {!roomId && (
-                            <span className="ml-1 text-orange-600">(will be created when room is saved)</span>
-                          )}
-                        </p>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <Badge 
-                          variant={bed.isOccupied ? "destructive" : "default"}
-                          className="text-xs"
-                        >
-                          {bed.isOccupied ? 'Occupied' : 'Available'}
-                        </Badge>
+          {/* Beds List */}
+          {beds.length === 0 ? (
+            <div className="text-center py-6 sm:py-8 text-muted-foreground">
+              <Bed className="w-6 h-6 sm:w-8 sm:h-8 mx-auto mb-2 opacity-50" />
+              <p className="text-xs sm:text-sm">No beds added yet</p>
+              <p className="text-xs text-muted-foreground mt-1">
+                {roomId 
+                  ? 'Click "Add Bed" to create the first bed'
+                  : 'Add beds above, then save the room to create them'
+                }
+              </p>
+            </div>
+          ) : (
+            <div className="space-y-2">
+              {beds.map((bed, index) => (
+                <div key={bed.id} className="flex items-center gap-2 sm:gap-3 p-2 sm:p-3 bg-muted/30 rounded-lg">
+                  <div className="w-6 h-6 sm:w-8 sm:h-8 rounded bg-background border flex items-center justify-center text-xs sm:text-sm font-medium flex-shrink-0">
+                    {index + 1}
+                  </div>
+                  
+                  <div className="flex-1 min-w-0">
+                    {editingBedId === bed.id ? (
+                      <div className="flex items-center gap-1 sm:gap-2">
+                        <Input
+                          value={editingBedName}
+                          onChange={(e) => setEditingBedName(e.target.value)}
+                          className="h-7 sm:h-8 text-xs sm:text-sm"
+                          placeholder="Bed name"
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter') saveBedName();
+                            if (e.key === 'Escape') cancelEditing();
+                          }}
+                        />
                         <Button
                           type="button"
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => startEditingBed(bed)}
-                          className="h-7 w-7 p-0"
-                          disabled={isLoading}
+                          variant="outline"
+                          onClick={saveBedName}
+                          className="h-7 w-7 sm:h-8 sm:w-8 p-0 flex-shrink-0"
                         >
-                          <Edit2 className="w-3 h-3" />
+                          <Check className="w-3 h-3" />
                         </Button>
                         <Button
                           type="button"
                           variant="outline"
-                          size="sm"
-                          onClick={(e) => removeBed(bed.id, e)}
-                          className="h-7 w-7 p-0"
-                          disabled={isLoading}
+                          onClick={cancelEditing}
+                          className="h-7 w-7 sm:h-8 sm:w-8 p-0 flex-shrink-0"
                         >
-                          <Trash2 className="w-3 h-3" />
+                          <X className="w-3 h-3" />
                         </Button>
                       </div>
-                    </div>
-                  )}
+                    ) : (
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 sm:gap-2">
+                        <div className="min-w-0 flex-1">
+                          <p className="font-medium text-xs sm:text-sm truncate">{bed.bedNumber}</p>
+                          <p className="text-xs text-muted-foreground">
+                            Bed #{index + 1} in room
+                            {!roomId && (
+                              <span className="ml-1 text-orange-600 block sm:inline">
+                                (will be created when room is saved)
+                              </span>
+                            )}
+                          </p>
+                        </div>
+                        <div className="flex items-center gap-1 sm:gap-2 flex-shrink-0">
+                          <Badge 
+                            variant={bed.isOccupied ? "destructive" : "default"}
+                            className="text-xs"
+                          >
+                            {bed.isOccupied ? 'Occupied' : 'Available'}
+                          </Badge>
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => startEditingBed(bed)}
+                            className="h-6 w-6 sm:h-7 sm:w-7 p-0"
+                            disabled={isLoading}
+                          >
+                            <Edit className="w-3 h-3" />
+                          </Button>
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => removeBed(bed.id, bed.bedNumber)}
+                            className="h-6 w-6 sm:h-7 sm:w-7 p-0 text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20"
+                            disabled={isLoading}
+                          >
+                            <Trash2 className="w-3 h-3" />
+                          </Button>
+                        </div>
+                      </div>
+                    )}
+                  </div>
                 </div>
-              </div>
-            ))}
-            {!roomId && (
-              <div className="text-center py-2 text-xs text-orange-600 bg-orange-50 dark:bg-orange-900/20 rounded">
-                💡 All beds will be created when you save the room
-              </div>
-            )}
+              ))}
+            </div>
+          )}
+          {/* Room Type Info */}
+          <div className="mt-4 pt-4 border-t">
+            <div className="text-xs text-muted-foreground">
+              <p className="font-medium mb-1">Room Type Rules:</p>
+              <ul className="space-y-1">
+                <li>• 1 bed = Single Occupancy</li>
+                <li>• 2 beds = Double Occupancy</li>
+                <li>• 3 beds = Triple Occupancy</li>
+                <li>• 4+ beds = Multi-Occupancy</li>
+              </ul>
+            </div>
           </div>
-        )}
-
-        {/* Room Type Info */}
-        <div className="mt-4 pt-4 border-t">
-          <div className="text-xs text-muted-foreground">
-            <p className="font-medium mb-1">Room Type Rules:</p>
-            <ul className="space-y-1">
-              <li>• 1 bed = Single Occupancy</li>
-              <li>• 2 beds = Double Occupancy</li>
-              <li>• 3 beds = Triple Occupancy</li>
-              <li>• 4+ beds = Multi-Occupancy</li>
-            </ul>
-          </div>
-        </div>
-      </Card>
-    </div>
+        </Card>
+      </div>
+      
+      {/* Confirmation Dialog */}
+      <ConfirmationDialog
+        isOpen={isOpen}
+        onClose={closeDialog}
+        onConfirm={config.onConfirm}
+        title={config.title}
+        description={config.description}
+        confirmText={config.confirmText}
+        cancelText={config.cancelText}
+        variant={config.variant}
+        isLoading={isLoading}
+      />
+    </>
   );
 }
