@@ -76,10 +76,10 @@ export async function POST(req: NextRequest) {
       locality: validated.locality ?? "",
       // DB uses enum 'gender' defaulting to UNISEX; keep existing behavior
       gender: (validated as any).gender ?? "UNISEX",
-      managerName: validated.managerName ?? null,
-      phoneNumber: validated.phoneNumber ?? null,
-      lat: validated.lat ?? null,
-      lng: validated.lng ?? null,
+      managerName: validated.managerName ?? "",
+      phoneNumber: validated.phoneNumber ?? undefined,
+      lat: validated.lat ?? undefined,
+      lng: validated.lng ?? undefined,
       isFeatured: validated.isFeatured ?? false,
       // TODO: Uncomment once owner_id column is added to database
       // ownerId: userId,

@@ -38,6 +38,7 @@ export async function createTestPG() {
       city: 'Delhi',
       locality: 'Demo Locality',
       gender: 'UNISEX' as const,
+      managerName: 'Demo Manager',
       isPublished: false,
       // TODO: Add ownerId: userId once database column is available
     }).returning();
