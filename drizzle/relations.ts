@@ -25,9 +25,9 @@ export const enquiriesRelations = relations(enquiries, ({one}) => ({
 }));
 
 export const guestsRelations = relations(guests, ({one}) => ({
-	bed: one(beds, {
-		fields: [guests.bedId],
-		references: [beds.id]
+	room: one(rooms, {
+		fields: [guests.roomId],
+		references: [rooms.id]
 	}),
 }));
 
