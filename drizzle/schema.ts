@@ -1,4 +1,4 @@
-import { pgTable, foreignKey, text, boolean, index, varchar, timestamp, doublePrecision, unique, pgEnum } from "drizzle-orm/pg-core"
+import { pgTable, foreignKey, text, boolean, index, varchar, timestamp, doublePrecision, unique, pgEnum, integer } from "drizzle-orm/pg-core"
 import { sql } from "drizzle-orm"
 
 export const enquiryStatus = pgEnum("enquiry_status", ['NEW', 'CONTACTED', 'CLOSED'])
@@ -48,12 +48,18 @@ export const rooms = pgTable("rooms", {
 	basePrice: doublePrecision("base_price").notNull(),
 	deposit: doublePrecision(),
 	noticePeriod: text("notice_period").default('1 Month'),
+	roomImages: text("room_images").array().default([]), // Multiple images array
+	amenities: text().array().default([]),
+	capacity: integer().default(1),
+	isAvailable: boolean("is_available").default(true).notNull(),
+	updatedAt: timestamp("updated_at", { mode: 'string' }).defaultNow().notNull(),
 }, (table) => [
 	foreignKey({
 			columns: [table.pgId],
 			foreignColumns: [pgs.id],
 			name: "rooms_pg_id_pgs_id_fk"
 		}).onDelete("cascade"),
+	index("rooms_updated_idx").using("btree", table.updatedAt.desc().nullsLast().op("timestamp_ops")),
 ]);
 
 export const pgs = pgTable("pgs", {
@@ -84,23 +90,33 @@ export const pgs = pgTable("pgs", {
 // Guest tracking - for check-in/check-out management
 export const guests = pgTable("guests", {
 	id: text().primaryKey().notNull(),
-	bedId: text("bed_id").notNull(),
+	pgId: text("pg_id").notNull(),
+	roomId: text("room_id").notNull(),
 	name: text().notNull(),
+	email: varchar({ length: 255 }),
 	phone: varchar({ length: 15 }),
-	email: text(),
 	checkInDate: timestamp("check_in_date", { mode: 'string' }).notNull(),
 	checkOutDate: timestamp("check_out_date", { mode: 'string' }),
-	isActive: boolean("is_active").default(true).notNull(),
+	status: text().default('active').notNull(),
+	numberOfOccupants: integer("number_of_occupants").default(1),
+	notes: text(),
 	createdAt: timestamp("created_at", { mode: 'string' }).defaultNow().notNull(),
 	updatedAt: timestamp("updated_at", { mode: 'string' }).defaultNow().notNull(),
 }, (table) => [
 	foreignKey({
-			columns: [table.bedId],
-			foreignColumns: [beds.id],
-			name: "guests_bed_id_beds_id_fk"
+			columns: [table.pgId],
+			foreignColumns: [pgs.id],
+			name: "guests_pg_id_pgs_id_fk"
 		}).onDelete("cascade"),
-	index("guest_bed_idx").using("btree", table.bedId.asc().nullsLast().op("text_ops")),
-	index("guest_active_idx").using("btree", table.isActive.asc().nullsLast().op("bool_ops")),
+	foreignKey({
+			columns: [table.roomId],
+			foreignColumns: [rooms.id],
+			name: "guests_room_id_rooms_id_fk"
+		}).onDelete("cascade"),
+	index("guests_pg_id_idx").using("btree", table.pgId.asc().nullsLast().op("text_ops")),
+	index("guests_room_id_idx").using("btree", table.roomId.asc().nullsLast().op("text_ops")),
+	index("guests_status_idx").using("btree", table.status.asc().nullsLast().op("text_ops")),
+	index("guests_check_in_idx").using("btree", table.checkInDate.asc().nullsLast().op("timestamp_ops")),
 ]);
 
 // Safety audits - for compliance and safety tracking

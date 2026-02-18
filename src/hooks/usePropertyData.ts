@@ -76,11 +76,13 @@ export function usePropertyData<T = any>({
         setPg(pgData);
       }
 
-      // 2. Cache Check (Only if NOT forcing a refresh)
+      // 2. Cache Check (with optional force refresh)
       if (!forceRefresh) {
         const cachedData = getCacheMethod()(pgId);
         if (cachedData) {
-          console.log(`[usePropertyData] Serving ${dataType} from cache`);
+          if (process.env.NODE_ENV === 'development') {
+        console.log(`[usePropertyData] Serving ${dataType} from cache:`, cachedData);
+      }
           setData(cachedData as T[]);
           setLoading(false);
           return;
@@ -88,14 +90,23 @@ export function usePropertyData<T = any>({
       }
 
       // 3. API Fetch (Redundant second cache check removed here)
-      console.log(`[usePropertyData] Fetching fresh ${dataType} from API`);
+      if (process.env.NODE_ENV === 'development') {
+        console.log(`[usePropertyData] Fetching fresh ${dataType} from API`);
+      }
       const endpoint = getApiEndpoint();
+      if (process.env.NODE_ENV === 'development') {
+        console.log(`[usePropertyData] API endpoint:`, endpoint);
+      }
       const res = await fetch(endpoint, { signal });
 
       if (!res.ok) throw new Error(`Failed to fetch ${dataType}`);
 
       const resData = await res.json();
       const dataArray = Array.isArray(resData) ? resData : resData.data || [];
+
+      if (process.env.NODE_ENV === 'development') {
+        console.log(`[usePropertyData] API response for ${dataType}:`, dataArray);
+      }
 
       setData(dataArray);
       setCacheMethod()(pgId, dataArray);

@@ -90,9 +90,13 @@ const isCacheStillValid = (timestamp: number, expirationMs: number): boolean => 
   const isValid = age < expirationMs;
   
   if (!isValid) {
+  if (process.env.NODE_ENV === 'development') {
     console.log(`[PropertyDataStore] Cache expired: age=${age}ms, max=${expirationMs}ms`);
+  }
   } else {
+  if (process.env.NODE_ENV === 'development') {
     console.log(`[PropertyDataStore] Cache hit: age=${age}ms, remaining=${expirationMs - age}ms`);
+  }
   }
   
   return isValid;
@@ -113,7 +117,6 @@ export const usePropertyDataStore = create<PropertyDataState>()(
           newCache.set(pgId, { data: rooms, timestamp: Date.now() });
           return { roomsCache: newCache };
         });
-        console.log(`[PropertyDataStore] Rooms cached for PG: ${pgId}`);
       },
       getRoomsFromCache: (pgId: string) => {
         const state = get();
@@ -151,7 +154,6 @@ export const usePropertyDataStore = create<PropertyDataState>()(
           newCache.set(pgId, { data: enquiries, timestamp: Date.now() });
           return { enquiriesCache: newCache };
         });
-        console.log(`[PropertyDataStore] Enquiries cached for PG: ${pgId}`);
       },
       getEnquiriesFromCache: (pgId: string) => {
         const state = get();
@@ -189,7 +191,6 @@ export const usePropertyDataStore = create<PropertyDataState>()(
           newCache.set(pgId, { data: guests, timestamp: Date.now() });
           return { guestsCache: newCache };
         });
-        console.log(`[PropertyDataStore] Guests cached for PG: ${pgId}`);
       },
       getGuestsFromCache: (pgId: string) => {
         const state = get();
@@ -227,7 +228,6 @@ export const usePropertyDataStore = create<PropertyDataState>()(
           newCache.set(pgId, { data: audits, timestamp: Date.now() });
           return { safetyAuditsCache: newCache };
         });
-        console.log(`[PropertyDataStore] Safety audits cached for PG: ${pgId}`);
       },
       getSafetyAuditsFromCache: (pgId: string) => {
         const state = get();

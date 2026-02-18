@@ -23,9 +23,8 @@ export async function createGuest(data: CreateGuestInput) {
 
   const validated = createGuestSchema.parse(data);
 
-  const newGuest = await db
-    .insert(guests)
-    .values({
+  try {
+    const guestData = {
       id: `guest_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
       pgId: validated.pgId,
       roomId: validated.roomId,
@@ -33,17 +32,24 @@ export async function createGuest(data: CreateGuestInput) {
       email: validated.email || undefined,
       phone: validated.phone || undefined,
       checkInDate: new Date(validated.checkInDate),
-      checkOutDate: validated.checkOutDate ? new Date(validated.checkOutDate) : null,
+      checkOutDate: validated.checkOutDate ? new Date(validated.checkOutDate) : undefined,
       status: validated.status,
       numberOfOccupants: validated.numberOfOccupants,
       notes: validated.notes || undefined,
-    })
-    .returning();
+    };
 
-  revalidatePath('/admin/guests');
-  revalidatePath(`/admin/pgs/${validated.pgId}/guests`);
+    const newGuest = await db
+      .insert(guests)
+      .values(guestData)
+      .returning();
 
-  return { success: true, guest: newGuest[0] };
+    revalidatePath('/admin/guests');
+    revalidatePath(`/admin/pgs/${validated.pgId}/guests`);
+
+    return { success: true, guest: newGuest[0] };
+  } catch (error) {
+    throw error;
+  }
 }
 
 /**
