@@ -1,5 +1,5 @@
 import { requireOwnerAccess } from '@/lib/auth';
-import { PGForm } from '@/components/admin/PGForm';
+import PGForm from '@/components/admin/PGForm';
 
 export default async function CreatePGPage() {
   await requireOwnerAccess();

@@ -60,10 +60,12 @@ function getCityConfig(city: string) {
     return cityConfigs[city as keyof typeof cityConfigs];
   }
   
-  // Generate dynamic config for new cities
+  // Generate dynamic config for new cities (deterministic color based on city name)
   const IconComponent = Map; // Default to Map icon for new cities
   const colors = ['text-green-500', 'text-red-500', 'text-yellow-500', 'text-indigo-500', 'text-pink-500'];
-  const randomColor = colors[Math.floor(Math.random() * colors.length)];
+  // Use city name to generate consistent color (hash-based)
+  const colorIndex = city.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0) % colors.length;
+  const randomColor = colors[colorIndex];
   
   return {
     icon: <IconComponent className={`w-4 h-4 ${randomColor}`} />,

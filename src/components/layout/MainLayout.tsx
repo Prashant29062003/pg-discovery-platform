@@ -3,13 +3,15 @@
 import { usePathname } from "next/navigation";
 import Navbar from "@/components/branding/Navbar";
 import Footer from "@/components/branding/Footer";
-import { FloatingEnquiry } from "../visitor/forms/FloatingEnquiry";
+import ReturnToTop from "@/components/common/ReturnToTop";
+import ReturnToTopMobile from "@/components/common/ReturnToTopMobile";
+import BetweenPageEnquiry from "@/components/common/BetweenPageEnquiry";
 
 export default function MainLayout({ children }: { children: React.ReactNode }) {
     const pathname = usePathname();
     const isLanding = pathname === "/";
     
-    const showFloatingEnquiry = pathname.startsWith("/pgs") || pathname.startsWith("/dashboard") || pathname.startsWith("/wallet") || pathname.startsWith("/messages");
+    const showBetweenPageEnquiry = !pathname.startsWith("/admin") && !pathname.startsWith("/dashboard") && !pathname.startsWith("/wallet") && !pathname.startsWith("/messages");
 
     return (
         <div className="flex min-h-screen bg-zinc-50 dark:bg-black transition-colors duration-300">
@@ -21,7 +23,18 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
                     {children}
                 </main>
                 <Footer />
-                {showFloatingEnquiry && <FloatingEnquiry/>}
+                
+                {/* Between Page Enquiry - Shows in middle of pages */}
+                {showBetweenPageEnquiry && <BetweenPageEnquiry />}
+                
+                {/* Return to Top Components */}
+                <div className="hidden md:block">
+                    <ReturnToTop />
+                </div>
+                
+                <div className="md:hidden">
+                    <ReturnToTopMobile />
+                </div>
             </div>
         </div>
     );

@@ -1,0 +1,94 @@
+<mjml>
+  <mj-body background-color="#f8f9fa">
+    <!-- Header Section -->
+    <mj-section background-color="#27ae60" padding="30px 20px">
+      <mj-column>
+        <mj-text align="center" font-size="28px" font-weight="bold" color="#ffffff" font-family="Arial, sans-serif">
+          ✅ Enquiry Confirmed!
+        </mj-text>
+        <mj-text align="center" font-size="18px" color="#ecf0f1" font-family="Arial, sans-serif">
+          Thank you for your interest in {{pgName}}
+        </mj-text>
+      </mj-column>
+    </mj-section>
+
+    <!-- Welcome Message -->
+    <mj-section background-color="#ffffff" padding="30px 20px">
+      <mj-column>
+        <mj-text font-size="20px" font-weight="bold" color="#2c3e50" font-family="Arial, sans-serif">
+          Hello {{visitorName}}!
+        </mj-text>
+        <mj-text font-size="16px" color="#34495e" font-family="Arial, sans-serif" line-height="1.6">
+          Your enquiry has been successfully received and the property manager will contact you shortly. 
+          We appreciate your interest in finding the perfect accommodation.
+        </mj-text>
+      </mj-column>
+    </mj-section>
+
+    <!-- What Happens Next -->
+    <mj-section background-color="#ffffff" padding="0 20px 30px 20px">
+      <mj-column>
+        <mj-text font-size="20px" font-weight="bold" color="#2c3e50" font-family="Arial, sans-serif">
+          📋 What Happens Next?
+        </mj-text>
+        <mj-divider border-color="#ecf0f1" border-width="2px" />
+        
+        <mj-text font-size="16px" color="#34495e" font-family="Arial, sans-serif" line-height="1.6">
+          <strong>•</strong> The property manager will review your enquiry<br>
+          <strong>•</strong> You'll receive a call or email within 24 hours<br>
+          <strong>•</strong> They'll provide more details about the property<br>
+          <strong>•</strong> Schedule a property visit if interested
+        </mj-text>
+      </mj-column>
+    </mj-section>
+
+    <!-- Contact Information -->
+    {{#contactInfo}}
+    <mj-section background-color="#ffffff" padding="0 20px 30px 20px">
+      <mj-column>
+        <mj-text font-size="20px" font-weight="bold" color="#2c3e50" font-family="Arial, sans-serif">
+          📞 Contact Information
+        </mj-text>
+        <mj-divider border-color="#ecf0f1" border-width="2px" />
+        <mj-text font-size="16px" color="#34495e" font-family="Arial, sans-serif" line-height="1.6">
+          Feel free to reach out directly:
+        </mj-text>
+        {{#contactInfo.phone}}
+        <mj-button href="tel:{{contactInfo.phone}}" background-color="#27ae60" color="#ffffff" font-size="16px" font-weight="bold" border-radius="8px" padding="12px 24px" font-family="Arial, sans-serif">
+          📞 {{contactInfo.phone}}
+        </mj-button>
+        {{/contactInfo.phone}}
+        {{#contactInfo.email}}
+        <mj-button href="mailto:{{contactInfo.email}}" background-color="#3498db" color="#ffffff" font-size="16px" font-weight="bold" border-radius="8px" padding="12px 24px" font-family="Arial, sans-serif">
+          ✉️ {{contactInfo.email}}
+        </mj-button>
+        {{/contactInfo.email}}
+      </mj-column>
+    </mj-section>
+    {{/contactInfo}}
+
+    <!-- Support Section -->
+    <mj-section background-color="#ffffff" padding="0 20px 30px 20px">
+      <mj-column>
+        <mj-text align="center" font-size="16px" color="#7f8c8d" font-family="Arial, sans-serif">
+          Need assistance? Contact our support team
+        </mj-text>
+        <mj-button href="mailto:support@pgdiscovery.com" background-color="#95a5a6" color="#ffffff" font-size="14px" font-weight="bold" border-radius="8px" padding="10px 20px" font-family="Arial, sans-serif">
+          support@pgdiscovery.com
+        </mj-button>
+      </mj-column>
+    </mj-section>
+
+    <!-- Footer -->
+    <mj-section background-color="#ecf0f1" padding="20px">
+      <mj-column>
+        <mj-text align="center" font-size="14px" color="#7f8c8d" font-family="Arial, sans-serif">
+          PG Discovery Platform - Find Your Perfect PG
+        </mj-text>
+        <mj-text align="center" font-size="12px" color="#95a5a6" font-family="Arial, sans-serif">
+          Confirmation sent at {{timestamp}}
+        </mj-text>
+      </mj-column>
+    </mj-section>
+  </mj-body>
+</mjml>

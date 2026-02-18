@@ -6,7 +6,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { 
   LayoutDashboard, Home, Store, Wallet, Settings, ShieldCheck, Camera, 
   Bed, Users, FileText, MessageSquare, ChevronLeft, ChevronRight, Menu, X, Edit, Archive,
-  DoorOpen, ArrowLeft, Plus
+  DoorOpen, ArrowLeft, Plus, Building
 } from "lucide-react";
 import { cn } from "@/utils";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
@@ -42,14 +42,14 @@ const getPropertyGroups = (pgId: string) => [
     group: "Property Management",
     items: [
       { icon: LayoutDashboard, label: "PG Dashboard", href: `/admin/pgs/${pgId}` },
+      { icon: DoorOpen, label: "Rooms", href: `/admin/pgs/${pgId}/rooms` },
       { icon: ShieldCheck, label: "Safety Audits", href: `/admin/pgs/${pgId}/safety` },
       { icon: Camera, label: "Life Gallery", href: `/admin/pgs/${pgId}/gallery` },
     ]
   },
   {
-    group: "Inventory & Guests",
+    group: "Guest Management",
     items: [
-      { icon: DoorOpen, label: "Rooms & Beds", href: `/admin/pgs/${pgId}/rooms` },
       { icon: MessageSquare, label: "Enquiries", href: `/admin/pgs/${pgId}/enquiries` },
       { icon: Users, label: "Current Guests", href: `/admin/pgs/${pgId}/guests` },
     ]

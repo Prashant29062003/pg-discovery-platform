@@ -38,7 +38,11 @@ export async function GET(
   }
 }
 
-export async function PUT(
+/**
+ * PATCH /api/pgs/[pgId]/rooms/[roomId]/beds/[bedId] - Update specific fields of an existing bed
+ * This is the correct method for partial updates (editing forms)
+ */
+export async function PATCH(
   req: NextRequest,
   { params }: { params: Promise<{ pgId: string; roomId: string; bedId: string }> }
 ) {
@@ -107,6 +111,80 @@ export async function PUT(
 
     return NextResponse.json(
       { success: false, message: "Failed to update bed" },
+      { status: 500 }
+    );
+  }
+}
+
+/**
+ * PUT /api/pgs/[pgId]/rooms/[roomId]/beds/[bedId] - Replace entire bed resource
+ * This method replaces the entire bed with new data
+ * Use this only when you need to completely replace a bed
+ */
+export async function PUT(
+  req: NextRequest,
+  { params }: { params: Promise<{ pgId: string; roomId: string; bedId: string }> }
+) {
+  try {
+    // Verify owner access
+    await requireOwnerAccess();
+
+    const { bedId } = await params;
+    const { userId } = await auth();
+
+    if (!userId) {
+      return NextResponse.json(
+        { success: false, message: "Unauthorized" },
+        { status: 401 }
+      );
+    }
+
+    // ✅ CRITICAL FIX: Verify user owns this bed
+    try {
+      await verifyBedOwnership(bedId, userId);
+    } catch (error: any) {
+      return NextResponse.json(
+        { success: false, message: error.message },
+        { status: error.message === 'Bed not found' ? 404 : 403 }
+      );
+    }
+
+    const body = await req.json();
+
+    // Validate input using DB-friendly schema (full validation for PUT)
+    const validated = dbBedSchema.parse(body);
+
+    // Update bed (replace entire resource)
+    const result = await db
+      .update(beds)
+      .set(validated)
+      .where(eq(beds.id, bedId))
+      .returning();
+
+    if (!result.length) {
+      return NextResponse.json(
+        { success: false, message: "Bed not found" },
+        { status: 404 }
+      );
+    }
+
+    return NextResponse.json({
+      success: true,
+      data: result[0],
+      message: "Bed replaced successfully",
+    });
+  } catch (error: any) {
+    console.error("Error replacing bed:", error);
+
+    if (error.name === "ZodError") {
+      return NextResponse.json(
+        { success: false, message: "Invalid input", errors: error.errors },
+        { status: 400 }
+      );
+    }
+
+    return NextResponse.json(
+      { success: false, message: "Failed to replace bed" },
       { status: 500 }
     );
   }

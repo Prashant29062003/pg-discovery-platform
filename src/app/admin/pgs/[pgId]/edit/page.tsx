@@ -5,7 +5,7 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft, AlertCircle } from 'lucide-react';
-import { PGForm } from '@/components/admin/PGForm';
+import PGForm from '@/components/admin/PGForm';
 import { getPGForEdit } from '@/modules/pg/pg.actions';
 
 interface PGFormData {

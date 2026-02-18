@@ -15,6 +15,7 @@ import { Input } from "@/components/ui/input";
 import { cn } from "@/utils";
 import { useAppStore } from "@/store/useAppStore";
 import { ConfirmationDialog, useConfirmationDialog } from '@/components/ui/confirmation-dialog';
+import { showToast } from '@/utils/toast';
 
 type PG = {
   id: string;
@@ -39,6 +40,7 @@ export default function AdminPgsManager() {
   const [searchQuery, setSearchQuery] = useState("");
   const [isDeleting, setIsDeleting] = useState(false);
   const { isOpen, openDialog, closeDialog, config } = useConfirmationDialog();
+  const { isOpen: isDeleteOpen, openDialog: openDeleteDialog, closeDialog: closeDeleteDialog, config: deleteConfig } = useConfirmationDialog();
 
   // Zustand store
   const cachedPgs = useAppStore((state) => state.pgs);
@@ -96,9 +98,9 @@ export default function AdminPgsManager() {
   }
 
   async function handleDelete(id: string, name: string) {
-    openDialog({
-      title: 'Delete Property',
-      description: `Are you sure you want to delete "${name}"? This action cannot be undone and will permanently remove this property along with all its rooms and beds.`,
+    openDeleteDialog({
+      title: `Delete Property: ${name}`,
+      description: `Are you sure you want to delete "${name}"? This action cannot be undone and will permanently remove this property and all its rooms and beds.`,
       confirmText: 'Delete Property',
       cancelText: 'Cancel',
       variant: 'destructive',
@@ -109,13 +111,18 @@ export default function AdminPgsManager() {
           const json = await res.json();
           if (json?.success) {
             setData((prev) => prev?.filter((p) => p.id !== id) ?? null);
+            showToast.success('Property deleted successfully', `${name} has been removed`);
+            // Auto-close dialog after success
+            setTimeout(() => { closeDeleteDialog(); }, 500);
+            // Clear cache to refresh data
+            const { clearPgsCache } = useAppStore.getState();
+            clearPgsCache();
           } else {
             throw new Error(json?.message || 'Failed to delete property');
           }
         } catch (e) {
           console.error('Error deleting PG:', e);
-          // You could use a toast notification here if available
-          alert("Failed to delete property: " + (e instanceof Error ? e.message : 'Unknown error'));
+          showToast.error('Failed to delete property', e instanceof Error ? e.message : 'Unknown error');
         } finally {
           setIsDeleting(false);
         }
@@ -218,6 +225,19 @@ export default function AdminPgsManager() {
         confirmText={config.confirmText}
         cancelText={config.cancelText}
         variant={config.variant}
+        isLoading={isDeleting}
+      />
+      
+      {/* Delete Confirmation Dialog */}
+      <ConfirmationDialog
+        isOpen={isDeleteOpen}
+        onClose={closeDeleteDialog}
+        onConfirm={deleteConfig.onConfirm}
+        title={deleteConfig.title}
+        description={deleteConfig.description}
+        confirmText={deleteConfig.confirmText}
+        cancelText={deleteConfig.cancelText}
+        variant={deleteConfig.variant}
         isLoading={isDeleting}
       />
     </>

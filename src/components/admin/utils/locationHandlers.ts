@@ -5,7 +5,7 @@ import { showToast } from '@/utils/toast';
 import { extractCoordinatesFromMapsUrl, reverseGeocode, LocationDetails } from './location';
 
 export interface LocationUpdateCallback {
-  (key: 'lat' | 'lng' | 'address' | 'city' | 'locality' | 'fullAddress', value: string): void;
+  (key: 'lat' | 'lng' | 'address' | 'city' | 'locality' | 'fullAddress' | 'state' | 'country', value: string): void;
 }
 
 /**
@@ -40,24 +40,34 @@ export async function handleGoogleMapsLink(
         if (locationDetails.city) onUpdate('city', locationDetails.city);
         if (locationDetails.locality) onUpdate('locality', locationDetails.locality);
         if (locationDetails.fullAddress) onUpdate('fullAddress', locationDetails.fullAddress);
+        if (locationDetails.state) onUpdate('state', locationDetails.state);
+        if (locationDetails.country) onUpdate('country', locationDetails.country);
         
         const extractedFields = [];
         if (locationDetails.address) extractedFields.push('Street Address');
-        if (locationDetails.city) extractedFields.push('City');
+        if (locationDetails.city) extractedFields.push('City/District');
         if (locationDetails.locality) extractedFields.push('Locality/Area');
         if (locationDetails.fullAddress) extractedFields.push('Full Address');
+        if (locationDetails.state) extractedFields.push('State');
+        if (locationDetails.country) extractedFields.push('Country');
         
         showToast.success(
           '✅ Location extracted successfully!', 
           `Auto-filled: ${extractedFields.join(', ')} and Coordinates`
         );
       } else {
-        showToast.success('✅ Coordinates extracted!', 'Please fill the address fields manually');
+        showToast.warning(
+          '⚠️ Coordinates extracted but address lookup failed', 
+          'Please enter address details manually.'
+        );
       }
     } catch (geoErr) {
       console.error('Reverse geocode error:', geoErr);
       // Still show success even if reverse geocoding fails
-      showToast.success('✅ Coordinates extracted!', 'Please fill the address fields manually');
+      showToast.warning(
+        '⚠️ Coordinates extracted but address lookup failed', 
+        'Please enter address details manually.'
+      );
     }
   } catch (err: any) {
     console.error('Error processing maps link:', err);
@@ -95,25 +105,48 @@ export async function handleCurrentLocation(
 
     const locationDetails: LocationDetails | null = await reverseGeocode(position.latitude, position.longitude);
     if (locationDetails) {
+      // Debug: Log what we're about to set
+      console.log('Setting location fields:', {
+        address: locationDetails.address,
+        city: locationDetails.city,
+        locality: locationDetails.locality,
+        state: locationDetails.state,
+        country: locationDetails.country
+      });
+      
       // Update all location fields
       if (locationDetails.address) onUpdate('address', locationDetails.address);
       if (locationDetails.city) onUpdate('city', locationDetails.city);
       if (locationDetails.locality) onUpdate('locality', locationDetails.locality);
       if (locationDetails.fullAddress) onUpdate('fullAddress', locationDetails.fullAddress);
+      if (locationDetails.state) onUpdate('state', locationDetails.state);
+      if (locationDetails.country) onUpdate('country', locationDetails.country);
       
       const extractedFields = [];
       if (locationDetails.address) extractedFields.push('Street Address');
-      if (locationDetails.city) extractedFields.push('City');
+      if (locationDetails.city) extractedFields.push('City/District');
       if (locationDetails.locality) extractedFields.push('Locality/Area');
       if (locationDetails.fullAddress) extractedFields.push('Full Address');
+      if (locationDetails.state) extractedFields.push('State');
+      if (locationDetails.country) extractedFields.push('Country');
       
       showToast.success(
         '✅ Current location detected!', 
         `Auto-filled: ${extractedFields.join(', ')} and Coordinates`
       );
     } else {
-      onUpdate('address', `${position.latitude.toFixed(4)}, ${position.longitude.toFixed(4)}`);
-      showToast.success('✅ Location detected!', 'Please refine the address fields manually');
+      // Better fallback - don't set coordinates as address, leave it empty for manual input
+      onUpdate('address', '');
+      onUpdate('city', '');
+      onUpdate('locality', '');
+      onUpdate('fullAddress', '');
+      onUpdate('state', '');
+      onUpdate('country', '');
+      
+      showToast.warning(
+        '⚠️ Location detected but address not found', 
+        'Coordinates detected but address lookup failed. Please enter address manually.'
+      );
     }
   } catch (err: any) {
     console.error('Geolocation error:', err);

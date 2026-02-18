@@ -1,5 +1,5 @@
 import { requireOwnerAccess } from '@/lib/auth';
-import { RoomForm } from '@/components/admin/forms/RoomForm';
+import RoomForm from '@/components/admin/forms/RoomForm';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';

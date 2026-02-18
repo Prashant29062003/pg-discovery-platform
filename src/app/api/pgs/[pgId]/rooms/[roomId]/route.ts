@@ -42,7 +42,11 @@ export async function GET(
   }
 }
 
-export async function PUT(
+/**
+ * PATCH /api/pgs/[pgId]/rooms/[roomId] - Update specific fields of an existing room
+ * This is the correct method for partial updates (editing forms)
+ */
+export async function PATCH(
   req: NextRequest,
   context: Context
 ) {
@@ -106,6 +110,80 @@ export async function PUT(
 
     return NextResponse.json(
       { success: false, message: "Failed to update room" },
+      { status: 500 }
+    );
+  }
+}
+
+/**
+ * PUT /api/pgs/[pgId]/rooms/[roomId] - Replace entire room resource
+ * This method replaces the entire room with new data
+ * Use this only when you need to completely replace a room
+ */
+export async function PUT(
+  req: NextRequest,
+  context: Context
+) {
+  try {
+    // Verify owner access
+    await requireOwnerAccess();
+
+    const { roomId } = await context.params;
+    const { userId } = await auth();
+
+    if (!userId) {
+      return NextResponse.json(
+        { success: false, message: "Unauthorized" },
+        { status: 401 }
+      );
+    }
+
+    // ✅ CRITICAL FIX: Verify user owns this room
+    try {
+      await verifyRoomOwnership(roomId, userId);
+    } catch (error: any) {
+      return NextResponse.json(
+        { success: false, message: error.message },
+        { status: error.message === 'Room not found' ? 404 : 403 }
+      );
+    }
+
+    const body = await req.json();
+
+    // Validate input using DB-friendly schema (full validation for PUT)
+    const validated = dbRoomSchema.parse(body);
+
+    // Update room (replace entire resource)
+    const result = await db
+      .update(rooms)
+      .set(validated)
+      .where(eq(rooms.id, roomId))
+      .returning();
+
+    if (!result.length) {
+      return NextResponse.json(
+        { success: false, message: "Room not found" },
+        { status: 404 }
+      );
+    }
+
+    return NextResponse.json({
+      success: true,
+      data: result[0],
+      message: "Room replaced successfully",
+    });
+  } catch (error: any) {
+    console.error("Error replacing room:", error);
+
+    if (error.name === "ZodError") {
+      return NextResponse.json(
+        { success: false, message: "Invalid input", errors: error.errors },
+        { status: 400 }
+      );
+    }
+
+    return NextResponse.json(
+      { success: false, message: "Failed to replace room" },
       { status: 500 }
     );
   }

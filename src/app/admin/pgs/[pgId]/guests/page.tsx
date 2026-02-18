@@ -33,7 +33,7 @@ export default function GuestsPage() {
   const [loadingRooms, setLoadingRooms] = useState(true);
 
   // Use optimized hook for data fetching with caching
-  const { data: guests, pg, loading, error } = usePropertyData({
+  const { data: guests, pg, loading, error, refetch } = usePropertyData({
     pgId,
     dataType: 'guests',
   });
@@ -128,7 +128,7 @@ export default function GuestsPage() {
             View and manage guest bookings and check-ins.
           </p>
         </div>
-        <AddGuestDialog pgId={pgId} rooms={rooms} />
+        <AddGuestDialog pgId={pgId} rooms={rooms} onGuestAdded={() => refetch()} />
       </div>
 
       {/* PROPERTY NAV TABS */}

@@ -284,7 +284,7 @@ export const AMENITY_OPTIONS = [
  * 
  * if (!result.success) {
  *   const errors = formatValidationErrors(result.error);
- *   console.log(errors);
+ *   // Development only: console.log(errors);
  *   // { pgName: 'PG name must be at least 3 characters', ... }
  * } else {
  *   const validData = result.data;

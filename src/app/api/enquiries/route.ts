@@ -68,7 +68,7 @@ export async function POST(req: NextRequest) {
       pgId: pgId || null, // Allow null for general inquiries
       name: body.name?.trim(),
       phone: body.phone?.trim().replace(/\D/g, ""), // Remove non-digits
-      email: body.email?.trim().toLowerCase(),
+      email: body.email?.trim().toLowerCase() || undefined, // Convert null/empty to undefined
       occupation: body.occupation?.trim() || "Student/Professional",
       roomType: (body.roomSharing || body.roomType || "SINGLE")?.trim(), // Support both field names
       moveInDate: body.moveInDate || new Date().toISOString(),
@@ -76,8 +76,14 @@ export async function POST(req: NextRequest) {
       id: body.id || crypto.randomUUID(),
     });
 
+    // Transform data to match service expectations (convert null to undefined)
+    const transformedData = {
+      ...parsed,
+      email: parsed.email || undefined, // Ensure email is never null
+    };
+
     // Pass to service with validated data
-    const enquiry = await submitEnquiry(parsed);
+    const enquiry = await submitEnquiry(transformedData);
 
     return NextResponse.json(
       { 

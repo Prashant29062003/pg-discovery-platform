@@ -56,10 +56,13 @@ interface StoreState {
 
   // Clear all cache
   clearCache: () => void;
+  
+  // Clear only PG cache (for when PG is updated)
+  clearPgsCache: () => void;
 }
 
-// Cache duration: 30 minutes (1800000 milliseconds)
-const CACHE_DURATION = 30 * 60 * 1000;
+// Cache duration: 2 minutes (120000 milliseconds) - much shorter for better updates
+const CACHE_DURATION = 2 * 60 * 1000;
 
 export const useAppStore = create<StoreState>()(
   persist(
@@ -74,7 +77,7 @@ export const useAppStore = create<StoreState>()(
       getPgsFromCache: () => {
         const state = get();
         if (state.isCachedDataValid()) {
-          console.log('[Cache Hit] Using cached PGs data');
+          // Using cached PGs data
           return state.pgs;
         }
         return null;
@@ -83,16 +86,10 @@ export const useAppStore = create<StoreState>()(
       isCachedDataValid: () => {
         const state = get();
         if (!state.pgs || state.pgsLastFetch === null) {
-          console.log('[Cache Miss] No PGs data in cache');
+          // No PGs data in cache
           return false;
         }
         const isValid = Date.now() - state.pgsLastFetch < CACHE_DURATION;
-        if (isValid) {
-          const ageSeconds = Math.round((Date.now() - state.pgsLastFetch) / 1000);
-          console.log(`[Cache Valid] PGs data is ${ageSeconds}s old (expires in ${Math.round((CACHE_DURATION - (Date.now() - state.pgsLastFetch)) / 1000)}s)`);
-        } else {
-          console.log('[Cache Expired] PGs data has expired');
-        }
         return isValid;
       },
 
@@ -105,6 +102,12 @@ export const useAppStore = create<StoreState>()(
       clearCache: () => set({ 
         user: null, 
         isCacheHydrated: false,
+        pgs: null,
+        pgsLastFetch: null,
+      }),
+
+      // Clear only PG cache (for when PG is updated)
+      clearPgsCache: () => set({ 
         pgs: null,
         pgsLastFetch: null,
       }),

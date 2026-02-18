@@ -18,6 +18,9 @@ export const createRoomSchema = z.object({
   basePrice: z.number().positive('Base price must be positive'),
   deposit: z.number().positive().optional(),
   noticePeriod: z.string().default('1 Month'),
+  imageUrl: z.string().url().optional(),
+  images: z.array(z.string().url()).optional(),
+  roomImages: z.array(z.string()).optional(), // Add roomImages field
 });
 
 /**

@@ -31,8 +31,14 @@ export default function UserMenu({ showLabel = true, variant = 'default' }: User
     setMounted(true);
   }, []);
 
-  // Always render the same structure to prevent hydration mismatch
-  const isLoading = !mounted || !isLoaded || !user;
+  // Prevent hydration mismatch by not rendering until mounted
+  if (!mounted) {
+    return (
+      <div className="w-8 h-8 rounded-full bg-zinc-200 dark:bg-zinc-800 animate-pulse" />
+    );
+  }
+
+  const isLoading = !isLoaded || !user;
 
   return (
     <DropdownMenu>

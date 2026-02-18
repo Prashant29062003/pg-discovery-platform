@@ -68,8 +68,26 @@ export async function reverseGeocode(lat: number, lng: number): Promise<Location
     if (!response.ok) return null;
     const data = await response.json();
     
+    // Debug: Log the raw response
+    console.log('Geocoding API Response:', data);
+    
     const address = data.address || {};
     const displayName = data.display_name || '';
+    
+    // Debug: Log address components
+    console.log('Address components:', {
+      city: address.city,
+      town: address.town,
+      village: address.village,
+      county: address.county,
+      suburb: address.suburb,
+      neighbourhood: address.neighbourhood,
+      district: address.district,
+      state: address.state,
+      country: address.country,
+      road: address.road,
+      house_number: address.house_number
+    });
     
     // Extract comprehensive address components
     const houseNumber = address.house_number || address.building || '';
@@ -78,7 +96,14 @@ export async function reverseGeocode(lat: number, lng: number): Promise<Location
     const suburb = address.suburb || address.neighbourhood || address.district || '';
     const neighbourhood = address.neighbourhood || address.suburb || '';
     const district = address.district || address.suburb || address.borough || '';
-    const city = address.city || address.town || address.village || address.county || '';
+    
+    // Fix: Better city detection for Indian locations
+    // Priority: city > town > county > village (but village should be locality, not city)
+    const directCity = address.city || address.town || '';
+    const city = directCity || address.county || '';
+    const village = address.village || ''; // This should be locality, not city
+    
+    // For Indian locations, sometimes the city is in county or other fields
     const state = address.state || address.province || address.region || '';
     const postcode = address.postcode || address.post_code || '';
     const country = address.country || address.country_code || '';
@@ -86,6 +111,15 @@ export async function reverseGeocode(lat: number, lng: number): Promise<Location
     const stateDistrict = address.state_district || '';
     const region = address.region || '';
     const quarter = address.quarter || '';
+    
+    // Debug: Log what we found for city
+    console.log('City detection:', {
+      directCity: address.city,
+      town: address.town,
+      county: address.county,
+      village: address.village,
+      finalCity: city
+    });
     
     // Area type classification
     const residential = address.residential || '';
@@ -97,17 +131,28 @@ export async function reverseGeocode(lat: number, lng: number): Promise<Location
                          [building, road].filter(Boolean).join(' ') || 
                          road || building || '';
     
-    const localityArea = suburb || neighbourhood || district || quarter || '';
-    const cityArea = city || '';
+    // Fix: Properly assign locality vs city
+    // Locality should be: suburb > neighbourhood > district > village > quarter
+    const localityArea = suburb || neighbourhood || district || village || quarter || '';
+    const cityArea = city || ''; // This should be Ambala Cantt, not Jandli
+    
+    // Debug: Log final assignments
+    console.log('Final assignments:', {
+      streetAddress,
+      cityArea,
+      localityArea,
+      state,
+      country,
+      note: village ? `${village} is being used as locality, not city` : ''
+    });
     
     // Build comprehensive full address
     const addressParts = [
       houseNumber,
       building,
       road,
-      suburb,
-      neighbourhood,
-      city,
+      localityArea, // Use localityArea instead of suburb/neighbourhood directly
+      cityArea,
       state,
       postcode,
       country
@@ -117,8 +162,8 @@ export async function reverseGeocode(lat: number, lng: number): Promise<Location
     
     return {
       address: streetAddress,
-      city: cityArea,
-      locality: localityArea,
+      city: cityArea, // This should be Ambala, not Jandli
+      locality: localityArea, // This should be Jandli
       fullAddress: fullAddress.trim(),
       // Enhanced details
       state,

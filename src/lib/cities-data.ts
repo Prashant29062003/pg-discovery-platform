@@ -26,7 +26,7 @@ export const CITIES_DATA = [
   },
   {
     id: 'gurgaon',
-    name: 'Gurgaon',
+    name: 'Gurugram',
     slug: 'gurgaon',
     imageUrl: 'https://images.unsplash.com/photo-1607623814075-e51df1bdc82f?w=800&h=600&fit=crop',
     description: 'Financial hub - Modern metro city with corporate offices',

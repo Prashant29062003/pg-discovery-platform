@@ -18,7 +18,7 @@ export const CITY_COORDINATES: Record<string, { lat: number; lng: number; name: 
   gurgaon: {
     lat: 28.4595,
     lng: 77.0266,
-    name: 'Gurgaon',
+    name: 'Gurugram',
   },
   noida: {
     lat: 28.5821,

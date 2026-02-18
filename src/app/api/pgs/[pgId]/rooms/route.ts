@@ -19,7 +19,8 @@ export async function GET(
     const roomsList = await db
       .select()
       .from(rooms)
-      .where(eq(rooms.pgId, pgId));
+      .where(eq(rooms.pgId, pgId))
+      .execute();
 
     return NextResponse.json({
       success: true,

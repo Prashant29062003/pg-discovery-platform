@@ -1,11 +1,11 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useRef, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { createRoom, updateRoom } from '@/modules/pg/room.actions';
+import { getRoomBeds, createBed, updateRoom, createRoom } from '@/modules/pg/room.actions';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -18,8 +18,9 @@ import {
 } from '@/components/ui/select';
 import { Card } from '@/components/ui/card';
 import { showToast } from '@/utils/toast';
-import { Home, IndianRupee, Layers3, AlertCircle, Bug, CheckCircle, AlertTriangle, Save } from 'lucide-react';
+import { Home, IndianRupee, Layers3, AlertCircle, Bug, CheckCircle, AlertTriangle, Save, Plus } from 'lucide-react';
 import BedManager from '@/components/admin/BedManager';
+import { ImageUpload } from '@/components/admin/ImageUpload';
 import { getRoomTypeByBedCount, getRoomTypeDisplayName } from '@/lib/room-utils';
 import { useRoomNumberValidation } from '@/hooks/useValidation';
 
@@ -30,11 +31,12 @@ const roomFormSchema = z.object({
     (val) => !isNaN(parseFloat(val)) && parseFloat(val) > 0,
     'Price must be a positive number'
   ),
-  deposit: z.string().optional().refine(
+  deposit: z.string().refine(
     (val) => !val || !isNaN(parseFloat(val)),
     'Deposit must be a valid number'
   ),
   noticePeriod: z.string().optional(),
+  roomImages: z.array(z.string()).optional(),
 });
 
 type RoomFormData = z.infer<typeof roomFormSchema>;
@@ -44,13 +46,17 @@ interface RoomFormProps {
   roomId?: string;
   initialData?: Partial<RoomFormData>;
   initialBeds?: Array<{ id: string; bedNumber: string; isOccupied: boolean }>;
+  onSuccess?: () => void;
 }
 
-export function RoomForm({ pgId, roomId, initialData, initialBeds = [] }: RoomFormProps) {
+export default function RoomForm({ pgId, roomId, initialData, initialBeds, onSuccess }: RoomFormProps) {
   const router = useRouter();
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [beds, setBeds] = useState<Array<{ id: string; bedNumber: string; isOccupied: boolean }>>(initialBeds);
-  const [roomType, setRoomType] = useState(initialData?.type || getRoomTypeByBedCount(initialBeds.length));
+  const [loading, setLoading] = useState(false);
+  const [beds, setBeds] = useState<Array<{ id: string; bedNumber: string; isOccupied: boolean }>>(initialBeds || []);
+  const previousBedsRef = useRef<Array<{ id: string; bedNumber: string; isOccupied: boolean }>>(initialBeds || []);
+  const [roomType, setRoomType] = useState(initialData?.type || getRoomTypeByBedCount(initialBeds?.length || 0));
+  const [roomImages, setRoomImages] = useState<string[]>(initialData?.roomImages || []);
+  const [roomImageNames, setRoomImageNames] = useState<string[]>([]);
 
   // Real-time validation for room number
   const { validation, validateRoomNumber, resetValidation } = useRoomNumberValidation(pgId, roomId);
@@ -67,7 +73,7 @@ export function RoomForm({ pgId, roomId, initialData, initialBeds = [] }: RoomFo
     resolver: zodResolver(roomFormSchema),
     defaultValues: {
       roomNumber: initialData?.roomNumber || '',
-      type: initialData?.type || getRoomTypeByBedCount(initialBeds.length),
+      type: initialData?.type || getRoomTypeByBedCount(initialBeds?.length || 0),
       basePrice: String(initialData?.basePrice || ''),
       deposit: String(initialData?.deposit || ''),
       noticePeriod: initialData?.noticePeriod || '1 Month',
@@ -76,36 +82,22 @@ export function RoomForm({ pgId, roomId, initialData, initialBeds = [] }: RoomFo
 
   const roomNumber = watch('roomNumber');
 
-  // Debug function to check actual database state
-  const debugRoomType = async () => {
-    if (!roomId) return;
-    
-    try {
-      const response = await fetch(`/api/debug-room-type?roomId=${roomId}`);
-      const data = await response.json();
-      
-      console.log('🐛 Debug Room Type Data:', data);
-      
-      showToast.info('Debug Info', `Room ${data.roomNumber}: ${data.currentType} (${data.bedCount} beds) - Expected: ${data.expectedType} - Matches: ${data.typeMatches ? '✅' : '❌'}`);
-    } catch (error) {
-      console.error('Debug error:', error);
-      showToast.error('Debug failed', 'Could not fetch room data');
-    }
-  };
-
   // Handle beds change - update room type based on bed count
-  const handleBedsChange = (beds: Array<{ id: string; bedNumber: string; isOccupied: boolean }>) => {
-    console.log('handleBedsChange called with beds:', beds.length, 'beds');
-    setBeds(beds); // Update local state
-    const suggestedType = getRoomTypeByBedCount(beds.length);
-    console.log('Suggested room type:', suggestedType, 'Current room type:', roomType);
-    if (suggestedType !== roomType) {
-      console.log('Updating form room type from', roomType, 'to', suggestedType);
-      setValue('type', suggestedType);
-    } else {
-      console.log('Room type already matches, no update needed');
+  const handleBedsChange = useCallback((newBeds: Array<{ id: string; bedNumber: string; isOccupied: boolean }>) => {
+    // Check if beds array actually changed by comparing with current state
+    const currentBeds = beds;
+    const bedsChanged = JSON.stringify(currentBeds) !== JSON.stringify(newBeds);
+    
+    if (bedsChanged) {
+      setBeds(newBeds); // Update local state
+      
+      const suggestedType = getRoomTypeByBedCount(newBeds.length);
+      if (suggestedType !== roomType) {
+        setValue('type', suggestedType);
+        setRoomType(suggestedType);
+      }
     }
-  };
+  }, []); // Empty dependency array - function never recreated
 
   // Handle room number change with validation
   const handleRoomNumberChange = async (value: string) => {
@@ -126,17 +118,36 @@ export function RoomForm({ pgId, roomId, initialData, initialBeds = [] }: RoomFo
       return;
     }
 
-    setIsSubmitting(true);
+    // Check if any changes were made
+    const roomData = {
+      roomNumber: data.roomNumber.toUpperCase().trim(),
+      type: data.type,
+      basePrice: parseFloat(data.basePrice),
+      deposit: data.deposit ? parseFloat(data.deposit) : undefined,
+      pgId,
+      noticePeriod: data.noticePeriod || '1 Month',
+      roomImages: roomImages,
+    };
+
+    const hasRoomChanges = initialData ? (
+      initialData.roomNumber !== roomData.roomNumber ||
+      initialData.type !== roomData.type ||
+      (initialData.basePrice ? parseFloat(initialData.basePrice) : 0) !== roomData.basePrice ||
+      (initialData.deposit ? parseFloat(initialData.deposit) : 0) !== (roomData.deposit || 0) ||
+      initialData.noticePeriod !== roomData.noticePeriod ||
+      JSON.stringify(initialData.roomImages || []) !== JSON.stringify(roomImages || [])
+    ) : true;
+
+    const hasBedsChanges = JSON.stringify(initialBeds) !== JSON.stringify(beds);
+
+    if (!hasRoomChanges && !hasBedsChanges) {
+      showToast.info('No changes detected', 'No modifications were made to save');
+      router.push(`/admin/pgs/${pgId}/rooms`);
+      return;
+    }
+
+    setLoading(true);
     try {
-      const roomData = {
-        roomNumber: data.roomNumber.toUpperCase().trim(),
-        type: data.type,
-        basePrice: parseFloat(data.basePrice),
-        deposit: data.deposit ? parseFloat(data.deposit) : undefined,
-        pgId,
-        noticePeriod: data.noticePeriod || '1 Month',
-      };
-      
       if (roomId) {
         await updateRoom(roomId, roomData, beds);
         showToast.success("Room Updated", `Room #${roomData.roomNumber} has been saved successfully.`);
@@ -149,9 +160,10 @@ export function RoomForm({ pgId, roomId, initialData, initialBeds = [] }: RoomFo
       showToast.error("Update Failed", "There was an issue connecting to the database.");
       console.error(error);
     } finally {
-      setIsSubmitting(false);
+      setLoading(false);
     }
-  }
+  };
+
 
   const getRoomTypeColor = () => {
     const colors: Record<string, string> = {
@@ -164,21 +176,23 @@ export function RoomForm({ pgId, roomId, initialData, initialBeds = [] }: RoomFo
   };
 
   return (
-    <div className="max-w-2xl mx-auto w-full px-2 sm:px-0">
+    <div className="w-full max-w-4xl mx-auto px-2 sm:px-4 lg:px-0">
       <Card className="border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 overflow-hidden">
         {/* Header */}
-        <div className="bg-gradient-to-r from-orange-50 to-orange-50/50 dark:from-orange-900/20 dark:to-orange-900/10 px-4 sm:px-6 py-4 sm:py-6 border-b border-zinc-200 dark:border-zinc-800">
-          <div className="flex items-center gap-3 mb-2">
-            <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg bg-orange-100 dark:bg-orange-900/40 flex items-center justify-center">
+        <div className="bg-gradient-to-r from-orange-50 to-orange-50/50 dark:from-orange-900/20 dark:to-orange-900/10 px-3 sm:px-6 py-3 sm:py-6 border-b border-zinc-200 dark:border-zinc-800">
+          <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4">
+            <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg bg-orange-100 dark:bg-orange-900/40 flex items-center justify-center flex-shrink-0">
               <Home className="w-4 h-4 sm:w-5 sm:h-5 text-orange-600 dark:text-orange-400" />
             </div>
-            <h2 className="text-xl sm:text-2xl font-bold text-zinc-900 dark:text-zinc-50">
-              {roomId ? 'Edit Room' : 'Create New Room'}
-            </h2>
+            <div className="flex-1 min-w-0">
+              <h2 className="text-lg sm:text-2xl font-bold text-zinc-900 dark:text-zinc-50 truncate">
+                {roomId ? 'Edit Room' : 'Create New Room'}
+              </h2>
+              <p className="text-xs sm:text-sm text-zinc-500 dark:text-zinc-400 mt-1">
+                {roomId ? 'Update room details and pricing' : 'Add a new room to your property'}
+              </p>
+            </div>
           </div>
-          <p className="text-xs sm:text-sm text-zinc-500 dark:text-zinc-400 ml-11 sm:ml-13">
-            {roomId ? 'Update room details and pricing' : 'Add a new room to your property'}
-          </p>
         </div>
 
         <form onSubmit={handleSubmit(onSubmit)} className="p-4 sm:p-6 space-y-4 sm:space-y-6">
@@ -254,14 +268,35 @@ export function RoomForm({ pgId, roomId, initialData, initialBeds = [] }: RoomFo
             </div>
           </div>
 
-          {/* Bed Management Section */}
-          <BedManager
-            roomId={roomId}
-            pgId={pgId}
-            roomNumber={watch('roomNumber')}
-            initialBeds={initialBeds}
-            onBedsChange={handleBedsChange}
-          />
+          {/* Room Images */}
+          <div className="mt-6 pt-6 border-t border-zinc-200 dark:border-zinc-800/50">
+            <ImageUpload
+              onImagesChange={setRoomImages}
+              onImageNamesChange={setRoomImageNames}
+              existingImages={roomImages}
+              existingImageNames={roomImageNames}
+              maxImages={4}
+              label="Room Images"
+              description="Add photos of this room to showcase its features"
+              imageType="roomImage"
+              pgName={`Room ${watch('roomNumber') || 'New'}`}
+            />
+          </div>
+
+          {/* Beds Management */}
+          <div className="mt-6 pt-6 border-t border-zinc-200 dark:border-zinc-800/50">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
+              <h3 className="text-lg font-semibold text-zinc-900 dark:text-zinc-50">Beds Configuration</h3>
+            </div>
+            
+            <BedManager
+              roomId={roomId}
+              pgId={pgId}
+              initialBeds={beds}
+              onBedsChange={handleBedsChange}
+              roomNumber={roomNumber}
+            />
+          </div>
 
           {/* Pricing Section */}
           <div className={`bg-gradient-to-br ${getRoomTypeColor()} rounded-lg p-4 sm:p-5 border border-zinc-100 dark:border-zinc-800/50`}>
@@ -337,7 +372,7 @@ export function RoomForm({ pgId, roomId, initialData, initialBeds = [] }: RoomFo
               type="button"
               variant="outline"
               onClick={() => router.back()}
-              disabled={isSubmitting}
+              disabled={loading}
               className="flex-1 sm:flex-none h-10 text-sm font-medium order-2 sm:order-1"
             >
               Cancel
@@ -348,7 +383,7 @@ export function RoomForm({ pgId, roomId, initialData, initialBeds = [] }: RoomFo
                 type="button"
                 variant="outline"
                 onClick={() => router.push(`/admin/pgs/${pgId}/rooms/${roomId}`)}
-                disabled={isSubmitting}
+                disabled={loading}
                 className="flex-1 sm:flex-none h-10 text-sm font-medium order-3 sm:order-2"
               >
                 View Room
@@ -357,10 +392,10 @@ export function RoomForm({ pgId, roomId, initialData, initialBeds = [] }: RoomFo
             
             <Button
               type="submit"
-              disabled={isSubmitting}
+              disabled={loading}
               className="flex-1 sm:flex-none h-10 text-sm font-medium bg-orange-600 hover:bg-orange-700 order-1 sm:order-3"
             >
-              {isSubmitting ? (
+              {loading ? (
                 <>
                   <Bug className="w-4 h-4 mr-2 animate-spin" />
                   {roomId ? 'Updating...' : 'Creating...'}

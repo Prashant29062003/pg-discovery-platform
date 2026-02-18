@@ -312,6 +312,8 @@ export async function getPGForEdit(pgId: string) {
     address: pg.address || '',
     city: pg.city || '',
     locality: pg.locality || '',
+    state: pg.state || '',
+    country: pg.country || '',
     lat: pg.lat || undefined,
     lng: pg.lng || undefined,
     fullAddress: pg.fullAddress || '',

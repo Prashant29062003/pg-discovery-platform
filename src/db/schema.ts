@@ -36,6 +36,8 @@ export const pgs = pgTable("pgs", {
   address: text("address").notNull(),
   city: text("city").notNull(),
   locality: text("locality").notNull(),
+  state: text("state"),
+  country: text("country"),
   lat: doublePrecision("lat"),
   lng: doublePrecision("lng"),
   availableBeds: integer("available_beds").default(0),
@@ -53,6 +55,7 @@ export const rooms = pgTable("rooms", {
   id: text("id").primaryKey(),
   pgId: text("pg_id").references(() => pgs.id, { onDelete: 'cascade' }).notNull(),
   roomNumber: text("room_number").notNull(),
+  floor: integer("floor").default(1).notNull(), // Floor number (1, 2, 3, etc.)
   type: roomTypeEnum("type").default('SINGLE').notNull(),
   basePrice: doublePrecision("base_price").notNull(),
   deposit: doublePrecision("deposit"),
@@ -66,6 +69,7 @@ export const rooms = pgTable("rooms", {
 }, (table) => ({
   pgIdIdx: index("rooms_pg_id_idx").on(table.pgId),
   availableIdx: index("rooms_available_idx").on(table.isAvailable),
+  floorIdx: index("rooms_floor_idx").on(table.pgId, table.floor),
 }));
 
 // 4. Bed Table
@@ -84,6 +88,7 @@ export const enquiries = pgTable("enquiries", {
   id: text("id").primaryKey(),
   pgId: text("pg_id").references(() => pgs.id), // Made nullable for general inquiries
   name: text("name").notNull(),
+  email: varchar("email", { length: 255 }),
   phone: varchar("phone", { length: 15 }).notNull(),
   message: text("message"),
   occupation: text("occupation"),
@@ -91,6 +96,7 @@ export const enquiries = pgTable("enquiries", {
   moveInDate: timestamp("move_in_date"),
   status: enquiryStatusEnum("status").default('NEW').notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
 }, (table) => ({
   spamCheckIdx: index("spam_check_idx").on(table.pgId, table.phone, table.createdAt),
 }));

@@ -35,6 +35,11 @@ export default async function FeaturedPGs() {
         
         return {
             ...pg,
+            state: pg.state || undefined, // Convert null to undefined
+            phoneNumber: pg.phoneNumber || undefined, // Convert null to undefined
+            thumbnailImage: pg.thumbnailImage || undefined, // Convert null to undefined
+            images: pg.images || undefined, // Convert null to undefined
+            amenities: pg.amenities || undefined, // Convert null to undefined
             startingPrice: pg.rooms[0]?.basePrice ?? 0,
             totalBeds,
             availableBeds,

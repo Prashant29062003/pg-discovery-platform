@@ -42,6 +42,7 @@ export async function createRoom(data: CreateRoomInput, bedsData?: Array<{ bedNu
       deposit: validated.deposit,
       noticePeriod: validated.noticePeriod,
       capacity: bedsData?.length || 1,
+      roomImages: validated.roomImages || [], // Include room images
     })
     .execute();
 
@@ -160,7 +161,7 @@ export async function createBed(data: CreateBedInput) {
 
   const bedId = `bed_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
 
-  await db
+  const result = await db
     .insert(beds)
     .values({
       id: bedId,
@@ -168,12 +169,12 @@ export async function createBed(data: CreateBedInput) {
       bedNumber: validated.bedNumber,
       isOccupied: validated.isOccupied,
     })
-    .execute();
+    .returning();
 
   // ✅ Selective cache revalidation
   await revalidateBedCache(room[0].pgId, validated.roomId, bedId);
 
-  return { success: true, bedId };
+  return result[0];
 }
 
 /**

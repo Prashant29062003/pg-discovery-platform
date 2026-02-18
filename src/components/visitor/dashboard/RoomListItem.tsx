@@ -16,6 +16,7 @@ interface RoomListItemProps {
         roomNumber: string;
         type: 'SINGLE' | 'DOUBLE' | 'TRIPLE' | 'OTHER';
         basePrice: number;
+        roomImages?: string[];
     };
     pgId: string;
 }
@@ -65,6 +66,38 @@ export default function RoomListItem({ room, pgId }: RoomListItemProps) {
             <Card className="group relative overflow-hidden border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 hover:shadow-lg hover:border-orange-200 dark:hover:border-orange-800 transition-all duration-300">
                 {/* Gradient accent bar */}
                 <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-orange-400 to-orange-600" />
+
+                {/* Room Image */}
+                <div className="relative h-48 overflow-hidden">
+                    {room.roomImages && room.roomImages.length > 0 ? (
+                        <img
+                            src={room.roomImages[0]}
+                            alt={`Room ${room.roomNumber}`}
+                            className="w-full h-full object-cover"
+                        />
+                    ) : (
+                        <div className="w-full h-full bg-linear-to-br from-zinc-100 via-zinc-150 to-zinc-200 dark:from-zinc-800 dark:via-zinc-850 dark:to-zinc-900 flex items-center justify-center relative overflow-hidden group">
+                            {/* Subtle pattern overlay */}
+                            <div className="absolute inset-0 opacity-5">
+                                <div className="absolute inset-0 bg-[linear-gradient(45deg,transparent_30%,rgba(0,0,0,0.05)_50%,transparent_70%)]"></div>
+                            </div>
+                            
+                            {/* Room number overlay */}
+                            <div className="absolute bottom-2 left-2 bg-black/20 dark:bg-black/40 px-2 py-1 rounded text-xs font-medium text-zinc-600 dark:text-zinc-300 backdrop-blur-sm">
+                                Room {room.roomNumber}
+                            </div>
+                            
+                            <Home className="w-12 h-12 text-zinc-400 dark:text-zinc-600 relative z-10 transition-transform group-hover:scale-110" />
+                        </div>
+                    )}
+                    
+                    {/* Image count badge */}
+                    {room.roomImages && room.roomImages.length > 1 && (
+                        <div className="absolute top-3 right-3 bg-black/60 text-white px-2 py-1 rounded-full text-xs">
+                            +{room.roomImages.length - 1} more
+                        </div>
+                    )}
+                </div>
 
                 <div className="p-6 space-y-5">
                     {/* Header: Room Number & Type Badge */}

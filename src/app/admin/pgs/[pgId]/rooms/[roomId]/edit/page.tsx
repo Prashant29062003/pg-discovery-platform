@@ -1,5 +1,5 @@
 import { requireOwnerAccess } from '@/lib/auth';
-import { RoomForm } from '@/components/admin/forms/RoomForm';
+import RoomForm from '@/components/admin/forms/RoomForm';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { ArrowLeft, Home, ChevronRight } from 'lucide-react';
@@ -46,6 +46,13 @@ export default async function EditRoomPage({ params: paramsPromise }: EditRoomPa
 
   const room = roomData[0];
 
+  // Transform beds data to match component expectations
+  const transformedBedsData = bedsData.map(bed => ({
+    id: bed.id,
+    bedNumber: bed.bedNumber || '', // Convert null to empty string
+    isOccupied: bed.isOccupied
+  }));
+
   return (
     <div className="max-w-4xl mx-auto py-6 px-4 sm:px-6">
       {/* 1. Accessible Breadcrumbs */}
@@ -80,24 +87,19 @@ export default async function EditRoomPage({ params: paramsPromise }: EditRoomPa
         </Link>
       </div>
 
-      {/* 3. Form Container (Card Style) */}
       <div className="bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-6 shadow-sm shadow-zinc-200/50 dark:shadow-none">
-        <RoomForm
-          pgId={pgId}
-          roomId={roomId}
-          initialData={{
-            roomNumber: room.roomNumber,
-            type: room.type,
-            basePrice: String(room.basePrice),
-            deposit: room.deposit ? String(room.deposit) : undefined,
-            noticePeriod: room.noticePeriod || '1 Month',
-          }}
-          initialBeds={bedsData.map(bed => ({
-            id: bed.id,
-            bedNumber: bed.bedNumber || `Bed-${bed.id.slice(-4)}`,
-            isOccupied: bed.isOccupied
-          }))}
-        />
+      <RoomForm
+        pgId={pgId}
+        roomId={roomId}
+        initialData={{
+          roomNumber: room.roomNumber,
+          type: room.type,
+          basePrice: room.basePrice.toString(),
+          deposit: room.deposit?.toString() || '',
+          noticePeriod: room.noticePeriod || '',
+        }}
+        initialBeds={transformedBedsData}
+      />
       </div>
       
       {/* 4. Help Note */}

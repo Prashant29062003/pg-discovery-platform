@@ -48,20 +48,26 @@ export function validateFormData(data: any): Record<string, string> {
 
   if (!trimmedDesc) {
     newErrors.description = 'Description is required';
-  } else if (trimmedDesc.length < 20) {
-    newErrors.description = 'Description must be at least 20 characters';
+  } else if (trimmedDesc.length < 10) { // Reduced from 20 to 10
+    newErrors.description = 'Description must be at least 10 characters';
   }
 
   if (!trimmedAddr) {
     newErrors.address = 'Address is required';
+  } else if (trimmedAddr.length < 5) { // Reduced requirement
+    newErrors.address = 'Address must be at least 5 characters';
   }
 
   if (!trimmedCity) {
     newErrors.city = 'City is required';
+  } else if (trimmedCity.length < 2) { // Reduced requirement
+    newErrors.city = 'City must be at least 2 characters';
   }
 
   if (!trimmedLocality) {
     newErrors.locality = 'Locality is required';
+  } else if (trimmedLocality.length < 2) { // Reduced requirement
+    newErrors.locality = 'Locality must be at least 2 characters';
   }
 
   return newErrors;

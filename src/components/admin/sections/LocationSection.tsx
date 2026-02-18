@@ -14,6 +14,8 @@ interface LocationSectionProps {
   fullAddress: string;
   city: string;
   locality: string;
+  state: string;
+  country: string;
   lat: string;
   lng: string;
   errors: Record<string, string>;
@@ -25,6 +27,8 @@ export function LocationSection({
   fullAddress,
   city,
   locality,
+  state,
+  country,
   lat,
   lng,
   errors,
@@ -56,7 +60,7 @@ export function LocationSection({
               <Input
                 id="mapsLink"
                 type="url"
-                placeholder="Paste Google Maps link (e.g., https://maps.google.com/?q=12.9352,77.6245)"
+                placeholder="Paste Google Maps link (e.g., https://maps.google.com/?q=123+Main+St,+Bangalore)"
                 className="flex-1 bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 border-zinc-200 dark:border-zinc-700"
               />
               <Button
@@ -160,7 +164,7 @@ export function LocationSection({
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-zinc-900 dark:text-zinc-100 mb-1">
-                City *
+                City/District *
                 {city && (
                   <span className="ml-2 text-xs bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400 px-2 py-1 rounded-full flex items-center gap-1 inline-flex">
                     <CheckCircle2 className="w-3 h-3" />
@@ -171,7 +175,7 @@ export function LocationSection({
               <Input
                 value={city}
                 onChange={(e) => onUpdate('city', e.target.value)}
-                placeholder="e.g., Bangalore"
+                placeholder="e.g., Bangalore or Ambala District"
                 className={`bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 border-zinc-200 dark:border-zinc-700 ${
                   errors.city ? 'border-red-500 dark:border-red-500' : city ? 'border-green-300 dark:border-green-700' : ''
                 }`}
@@ -200,7 +204,7 @@ export function LocationSection({
               <Input
                 value={locality}
                 onChange={(e) => onUpdate('locality', e.target.value)}
-                placeholder="e.g., Indiranagar"
+                placeholder="e.g., Indiranagar or Jandli"
                 className={`bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 border-zinc-200 dark:border-zinc-700 ${
                   errors.locality ? 'border-red-500 dark:border-red-500' : locality ? 'border-green-300 dark:border-green-700' : ''
                 }`}
@@ -217,44 +221,72 @@ export function LocationSection({
             </div>
           </div>
 
-          {/* Coordinates */}
+          {/* State and Country */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-zinc-900 dark:text-zinc-100 mb-1">
-                Latitude
+                State
+                {state && (
+                  <span className="ml-2 text-xs bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400 px-2 py-1 rounded-full flex items-center gap-1 inline-flex">
+                    <CheckCircle2 className="w-3 h-3" />
+                    Auto-filled
+                  </span>
+                )}
               </label>
               <Input
-                type="number"
-                step="0.000001"
-                value={lat}
-                onChange={(e) => onUpdate('lat', e.target.value)}
-                placeholder="e.g., 12.9352"
-                className="bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 border-zinc-200 dark:border-zinc-700"
+                value={state}
+                onChange={(e) => onUpdate('state', e.target.value)}
+                placeholder="e.g., Karnataka or Haryana"
+                className={`bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 border-zinc-200 dark:border-zinc-700 ${
+                  state ? 'border-green-300 dark:border-green-700' : ''
+                }`}
               />
-              <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1">For map integration</p>
+              {state && (
+                <p className="text-xs text-green-600 dark:text-green-400 mt-1 flex items-center gap-1">
+                  <CheckCircle2 className="w-3 h-3" />
+                  Extracted from Google Maps
+                </p>
+              )}
             </div>
 
             <div>
               <label className="block text-sm font-medium text-zinc-900 dark:text-zinc-100 mb-1">
-                Longitude
+                Country
+                {country && (
+                  <span className="ml-2 text-xs bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400 px-2 py-1 rounded-full flex items-center gap-1 inline-flex">
+                    <CheckCircle2 className="w-3 h-3" />
+                    Auto-filled
+                  </span>
+                )}
               </label>
               <Input
-                type="number"
-                step="0.000001"
-                value={lng}
-                onChange={(e) => onUpdate('lng', e.target.value)}
-                placeholder="e.g., 77.6245"
-                className="bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 border-zinc-200 dark:border-zinc-700"
+                value={country}
+                onChange={(e) => onUpdate('country', e.target.value)}
+                placeholder="e.g., India"
+                className={`bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 border-zinc-200 dark:border-zinc-700 ${
+                  country ? 'border-green-300 dark:border-green-700' : ''
+                }`}
               />
-              <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1">For map integration</p>
+              {country && (
+                <p className="text-xs text-green-600 dark:text-green-400 mt-1 flex items-center gap-1">
+                  <CheckCircle2 className="w-3 h-3" />
+                  Extracted from Google Maps
+                </p>
+              )}
             </div>
           </div>
 
+          {/* Coordinates - Hidden from users, used internally */}
+          <div className="hidden">
+            <input type="hidden" value={lat} onChange={(e) => onUpdate('lat', e.target.value)} />
+            <input type="hidden" value={lng} onChange={(e) => onUpdate('lng', e.target.value)} />
+          </div>
+
           {/* Google Maps Link Button */}
-          {lat && lng && (
+          {fullAddress && (
             <div className="pt-2">
               <a
-                href={`https://www.google.com/maps/search/${lat},${lng}`}
+                href={`https://www.google.com/maps/search/${encodeURIComponent(fullAddress)}`}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="inline-flex"
@@ -270,7 +302,7 @@ export function LocationSection({
                 </Button>
               </a>
               <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-2">
-                ✅ Coordinates saved. Click to verify location on Google Maps.
+                ✅ Location saved. Click to verify on Google Maps.
               </p>
             </div>
           )}

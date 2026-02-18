@@ -1,0 +1,111 @@
+<mjml>
+  <mj-body background-color="#f8f9fa">
+    <!-- Header Section -->
+    <mj-section background-color="#667eea" padding="30px 20px">
+      <mj-column>
+        <mj-text align="center" font-size="28px" font-weight="bold" color="#ffffff" font-family="Arial, sans-serif">
+          🎉 Welcome to PG Discovery!
+        </mj-text>
+        <mj-text align="center" font-size="18px" color="#ecf0f1" font-family="Arial, sans-serif">
+          Your property is now live
+        </mj-text>
+      </mj-column>
+    </mj-section>
+
+    <!-- Welcome Message -->
+    <mj-section background-color="#ffffff" padding="30px 20px">
+      <mj-column>
+        <mj-text font-size="20px" font-weight="bold" color="#2c3e50" font-family="Arial, sans-serif">
+          Hello {{ownerName}}!
+        </mj-text>
+        <mj-text font-size="16px" color="#34495e" font-family="Arial, sans-serif" line-height="1.6">
+          Congratulations! Your property <strong>{{pgName}}</strong> is now listed on PG Discovery Platform. 
+          You'll start receiving enquiries from potential tenants very soon.
+        </mj-text>
+      </mj-column>
+    </mj-section>
+
+    <!-- What You Can Expect -->
+    <mj-section background-color="#ffffff" padding="0 20px 30px 20px">
+      <mj-column>
+        <mj-text font-size="20px" font-weight="bold" color="#2c3e50" font-family="Arial, sans-serif">
+          🚀 What You Can Expect
+        </mj-text>
+        <mj-divider border-color="#ecf0f1" border-width="2px" />
+        
+        <mj-text font-size="16px" color="#34495e" font-family="Arial, sans-serif" line-height="1.6">
+          <strong>•</strong> Real-time enquiry notifications<br>
+          <strong>•</strong> Direct contact with interested tenants<br>
+          <strong>•</strong> Professional enquiry management system<br>
+          <strong>•</strong> 24/7 platform support
+        </mj-text>
+      </mj-column>
+    </mj-section>
+
+    <!-- Quick Start Guide -->
+    <mj-section background-color="#ffffff" padding="0 20px 30px 20px">
+      <mj-column>
+        <mj-text font-size="20px" font-weight="bold" color="#2c3e50" font-family="Arial, sans-serif">
+          📋 Quick Start Guide
+        </mj-text>
+        <mj-divider border-color="#ecf0f1" border-width="2px" />
+        
+        <mj-text font-size="16px" color="#34495e" font-family="Arial, sans-serif" line-height="1.6">
+          <strong>1. Manage Your Property:</strong> Update photos, pricing, and availability<br>
+          <strong>2. Respond to Enquiries:</strong> Quick response increases conversion<br>
+          <strong>3. Track Performance:</strong> Monitor views and enquiry rates<br>
+          <strong>4. Optimize Listing:</strong> Use analytics to improve visibility
+        </mj-text>
+      </mj-column>
+    </mj-section>
+
+    <!-- Action Button -->
+    <mj-section background-color="#ffffff" padding="0 20px 30px 20px">
+      <mj-column>
+        <mj-button href="https://pgdiscovery.com/admin/pgs" background-color="#667eea" color="#ffffff" font-size="16px" font-weight="bold" border-radius="8px" padding="12px 24px" font-family="Arial, sans-serif">
+          🏠 Manage Your Property
+        </mj-button>
+      </mj-column>
+    </mj-section>
+
+    <!-- Success Tips -->
+    <mj-section background-color="#f8f9fa" padding="30px 20px">
+      <mj-column>
+        <mj-text font-size="18px" font-weight="bold" color="#2c3e50" font-family="Arial, sans-serif">
+          💡 Success Tips
+        </mj-text>
+        <mj-text font-size="14px" color="#34495e" font-family="Arial, sans-serif" line-height="1.6">
+          • Respond to enquiries within 30 minutes<br>
+          • Keep your photos updated and professional<br>
+          • Price competitively based on local market<br>
+          • Highlight unique amenities and features<br>
+          • Maintain accurate availability information
+        </mj-text>
+      </mj-column>
+    </mj-section>
+
+    <!-- Support Section -->
+    <mj-section background-color="#ffffff" padding="0 20px 30px 20px">
+      <mj-column>
+        <mj-text align="center" font-size="16px" color="#7f8c8d" font-family="Arial, sans-serif">
+          Need help getting started?
+        </mj-text>
+        <mj-button href="mailto:support@pgdiscovery.com" background-color="#95a5a6" color="#ffffff" font-size="14px" font-weight="bold" border-radius="8px" padding="10px 20px" font-family="Arial, sans-serif">
+          Contact Support Team
+        </mj-button>
+      </mj-column>
+    </mj-section>
+
+    <!-- Footer -->
+    <mj-section background-color="#ecf0f1" padding="20px">
+      <mj-column>
+        <mj-text align="center" font-size="14px" color="#7f8c8d" font-family="Arial, sans-serif">
+          PG Discovery Platform - Connecting Tenants with Properties
+        </mj-text>
+        <mj-text align="center" font-size="12px" color="#95a5a6" font-family="Arial, sans-serif">
+          Welcome email sent at {{timestamp}}
+        </mj-text>
+      </mj-column>
+    </mj-section>
+  </mj-body>
+</mjml>

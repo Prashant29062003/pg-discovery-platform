@@ -183,15 +183,26 @@ export function PGImageThumbnail({
   src,
   alt,
   className = '',
+  cacheKey,
 }: {
   src?: string | null;
   alt: string;
   className?: string;
+  cacheKey?: number;
 }) {
-  // Use 30-minute cache busting for more frequent updates
+  // Use very aggressive cache busting for immediate updates
   const now = new Date();
-  const timeKey = `${now.getFullYear()}-${now.getMonth()}-${now.getDate()}-${now.getHours()}-${Math.floor(now.getMinutes() / 30)}`;
-  const imageSrc = src ? `${src}${src.includes('?') ? '&' : '?'}v=${timeKey}` : DEFAULT_IMAGES.pgThumbnail;
+  const timeKey = `${now.getFullYear()}-${now.getMonth()}-${now.getDate()}-${now.getHours()}-${now.getMinutes()}-${now.getSeconds()}`;
+  
+  // Add image URL hash and random component for better cache busting
+  const imageHash = src ? src.split('/').pop()?.split('.')[0] || 'default' : 'default';
+  const randomKey = Math.random().toString(36).substring(7);
+  
+  // Use provided cacheKey if available, otherwise generate one
+  const finalCacheKey = cacheKey !== undefined ? cacheKey : parseInt(`${timeKey.replace(/[^0-9]/g, '')}${imageHash.length}`, 10);
+  const cacheBustingKey = `${timeKey}-${imageHash}-${randomKey}-${finalCacheKey}`;
+  
+  const imageSrc = src ? `${src}${src.includes('?') ? '&' : '?'}v=${cacheBustingKey}` : DEFAULT_IMAGES.pgThumbnail;
 
   return (
     <div className={`relative bg-zinc-100 dark:bg-zinc-800 overflow-hidden ${className}`}>
