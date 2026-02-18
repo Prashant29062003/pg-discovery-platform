@@ -14,6 +14,26 @@ import { requireOwnerAccess } from '@/lib/auth';
 import { Separator } from '@/components/ui/separator';
 import { PGImageThumbnail } from '@/components/common/PGImageGallery';
 
+// Type definitions for the query result
+type RoomWithBeds = {
+  basePrice: number;
+  isAvailable: boolean;
+  beds: {
+    isOccupied: boolean;
+  }[];
+};
+
+type PGWithRooms = {
+  id: string;
+  name: string;
+  city: string;
+  locality: string;
+  isFeatured: boolean;
+  thumbnailImage: string | null;
+  images: string[];
+  rooms: RoomWithBeds[];
+};
+
 export default async function DashboardPage() {
   await requireOwnerAccess();
   const { userId } = await auth();
@@ -121,9 +141,9 @@ export default async function DashboardPage() {
                     </Link>
                 </div>
                 <div className="p-6 grid gap-4 sm:grid-cols-2">
-                    {recentPGsList.map((pg) => {
+                    {recentPGsList.map((pg: PGWithRooms) => {
                         // Calculate statistics
-                        const allBeds = pg.rooms.flatMap(room => room.beds);
+                        const allBeds = pg.rooms.flatMap((room: RoomWithBeds) => room.beds);
                         const totalBeds = allBeds.length;
                         const availableBeds = allBeds.filter(bed => !bed.isOccupied).length;
                         const startingPrice = pg.rooms.length > 0 ? Math.min(...pg.rooms.map(room => room.basePrice)) : 0;
