@@ -3,11 +3,14 @@
 import { useParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { ArrowLeft, AlertCircle, CheckCircle, AlertTriangle } from 'lucide-react';
+import { ArrowLeft, AlertCircle, CheckCircle, AlertTriangle, Eye, MoreHorizontal } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { PropertyNavTabs } from '@/components/admin/PropertyNavTabs';
 import { usePropertyData } from '@/hooks/usePropertyData';
 import { AddSafetyAuditDialog } from '@/components/admin/dialogs/AddSafetyAuditDialog';
+import { UpdateSafetyAuditDialog } from '@/components/admin/dialogs/UpdateSafetyAuditDialog';
+import { DeleteSafetyAuditDialog } from '@/components/admin/dialogs/DeleteSafetyAuditDialog';
+import { SafetyAuditDetailsDialog } from '@/components/admin/dialogs/SafetyAuditDetailsDialog';
 
 interface SafetyAudit {
   id: string;
@@ -28,7 +31,7 @@ export default function SafetyAuditPage() {
   const pgId = params.pgId as string;
 
   // Use optimized hook for data fetching with caching
-  const { data: audits, pg, loading, error } = usePropertyData({
+  const { data: audits, pg, loading, error, refetch } = usePropertyData({
     pgId,
     dataType: 'safety',
   });
@@ -117,7 +120,7 @@ export default function SafetyAuditPage() {
             Review safety and compliance audit records.
           </p>
         </div>
-        <AddSafetyAuditDialog pgId={pgId} />
+        <AddSafetyAuditDialog pgId={pgId} onSuccess={refetch} />
       </div>
 
       {/* PROPERTY NAV TABS */}
@@ -149,9 +152,22 @@ export default function SafetyAuditPage() {
                         <h3 className="font-semibold text-zinc-900 dark:text-zinc-50">{audit.item}</h3>
                         <p className="text-sm text-zinc-500 dark:text-zinc-400">{audit.category}</p>
                       </div>
-                      <span className={`px-3 py-1 rounded-full text-xs font-semibold whitespace-nowrap ${getStatusColor(audit.status)}`}>
-                        {audit.status.charAt(0).toUpperCase() + audit.status.slice(1)}
-                      </span>
+                      <div className="flex items-center gap-2">
+                        <span className={`px-3 py-1 rounded-full text-xs font-semibold whitespace-nowrap ${getStatusColor(audit.status)}`}>
+                          {audit.status.charAt(0).toUpperCase() + audit.status.slice(1)}
+                        </span>
+                        <div className="flex gap-1">
+                          <SafetyAuditDetailsDialog audit={audit} />
+                          <UpdateSafetyAuditDialog 
+                            audit={audit} 
+                            onSuccess={refetch} 
+                          />
+                          <DeleteSafetyAuditDialog 
+                            audit={audit} 
+                            onSuccess={refetch} 
+                          />
+                        </div>
+                      </div>
                     </div>
                     {audit.notes && (
                       <p className="text-sm text-zinc-600 dark:text-zinc-400 mb-2">{audit.notes}</p>

@@ -9,7 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Textarea } from '@/components/ui/textarea';
 import { Plus, Loader2 } from 'lucide-react';
 import { createSafetyAudit } from '@/modules/safety/safety.actions';
-import { AUDIT_CATEGORIES, type AuditStatus } from '@/modules/safety/safety.schema';
+import { AUDIT_CATEGORIES, type AuditStatus, type CreateSafetyAuditInput } from '@/modules/safety/safety.schema';
 import { toast } from 'sonner';
 
 interface AddSafetyAuditDialogProps {
@@ -38,14 +38,16 @@ export function AddSafetyAuditDialog({ pgId, onSuccess }: AddSafetyAuditDialogPr
 
     setLoading(true);
     try {
-      await createSafetyAudit({
+      const auditData: CreateSafetyAuditInput = {
         pgId,
         category: formData.category as typeof AUDIT_CATEGORIES[number],
         item: formData.item,
         status: formData.status as AuditStatus,
         inspectedBy: formData.inspectedBy,
         notes: formData.notes,
-      });
+      };
+
+      await createSafetyAudit(auditData);
 
       toast.success('Safety audit added successfully');
       setOpen(false);

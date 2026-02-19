@@ -61,30 +61,40 @@ export async function getPropertySafetyAudits(pgId: string) {
 /**
  * Update safety audit status
  */
-export async function updateSafetyAuditStatus(auditId: string, status: 'compliant' | 'warning' | 'critical') {
+export async function updateSafetyAuditStatus(data: UpdateAuditStatusInput) {
   const { userId } = await auth();
   if (!userId) throw new Error('Unauthorized');
 
+  const validated = updateAuditStatusSchema.parse(data);
+
   const updated = await db
     .update(safetyAudits)
-    .set({ status, lastChecked: new Date() })
-    .where(eq(safetyAudits.id, auditId))
+    .set({ 
+      status: validated.status, 
+      lastChecked: new Date(),
+      ...(validated.notes && { notes: validated.notes })
+    })
+    .where(eq(safetyAudits.id, validated.auditId))
     .returning();
 
   revalidatePath('/admin/safety');
+  revalidatePath(`/admin/pgs/${validated.pgId}/safety`);
   return { success: true, audit: updated[0] };
 }
 
 /**
  * Delete a safety audit record
  */
-export async function deleteSafetyAudit(auditId: string) {
+export async function deleteSafetyAudit(data: DeleteSafetyAuditInput) {
   const { userId } = await auth();
   if (!userId) throw new Error('Unauthorized');
 
-  await db.delete(safetyAudits).where(eq(safetyAudits.id, auditId));
+  const validated = deleteSafetyAuditSchema.parse(data);
+
+  await db.delete(safetyAudits).where(eq(safetyAudits.id, validated.auditId));
 
   revalidatePath('/admin/safety');
+  revalidatePath(`/admin/pgs/${validated.pgId}/safety`);
   return { success: true };
 }
 
